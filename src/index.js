@@ -1,2 +1,2 @@
-export { default as reducer } from './duck';
-export { default as withData } from './quest';
+export { default as reducer } from './reducer';
+export { default as quest } from './quest';

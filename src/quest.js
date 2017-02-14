@@ -4,9 +4,9 @@ import when from 'recompose/branch';
 import mapProps from 'recompose/mapProps';
 import withProps from 'recompose/withProps';
 import lifecycle from 'recompose/lifecycle';
-import omitProps from './omitProps';
-import { updateData } from '../ducks/_data_/actions';
-import { initialState } from '../ducks/_data_/reducer';
+import omitProps from './utils/omitProps';
+import { updateData } from './actions';
+import { initialState } from './reducer';
 
 var never = () => false;
 
