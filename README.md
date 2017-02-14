@@ -1,1 +1,33 @@
-# Redux Remote Data
+# redux-quest
+
+Declarative data fetching for universal Redux apps.
+
+[![npm](https://img.shields.io/npm/v/redux-quest.svg?style=flat-square)](http://npm.im/redux-quest)
+[![MIT License](https://img.shields.io/npm/l/react-jobs.svg?style=flat-square)](http://opensource.org/licenses/MIT)
+
+```js
+import quest from 'redux-quest';
+
+const postsResolver = {
+  key: 'posts',
+  get() {
+    return fetch('http://api.posts.com')
+  }
+};
+
+const enhance = quest({
+  resolver: postsResolver
+});
+
+const Posts = ({ posts }) => (
+  <div>
+    {posts.result && posts.result.map(post => <Post post={post} />)}
+  </div>
+);
+
+export default enhance(Posts);
+```
+
+### Introduction
+
+redux-quest is a lightweight library that ensures data from remote resources is passed into React components as and when it is needed.

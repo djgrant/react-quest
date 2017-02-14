@@ -1,6 +1,6 @@
 {
   "name": "redux-remote-data",
-  "description": "Declarative data fetching for Redux apps",
+  "description": "Declarative data fetching for universal Redux apps",
   "author": "Daniel Grant",
   "version": "0.1.0",
   "license": "MIT",
