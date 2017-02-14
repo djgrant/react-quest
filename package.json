@@ -9,7 +9,8 @@
     "url": "https://github.com/djgrant/redux-quest"
   },
   "scripts": {
-    "test": "jest --watch",
+    "test": "jest",
+    "dev": "jest --watch",
     "build": "npm run build:umd && npm run build:es",
     "build:umd": "BABEL_ENV=build webpack --config webpack.config.build.js -p",
     "build:es": "BABEL_ENV=build babel src --out-dir lib --ignore spec.js,test.js"
