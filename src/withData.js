@@ -5,9 +5,12 @@ import omitProps from './omitProps';
 import { updateData } from '../ducks/_data_/actions';
 import { initialState } from '../ducks/_data_/reducer';
 
+var never = () => false;
+
 var withData = ({
   resolver,
-  async = false
+  async = false,
+  reloadWhen = never
 }) => {
   var key = resolver.key;
   return compose(
@@ -40,6 +43,11 @@ var withData = ({
       componentDidMount() {
         // if the data failed on the server, try again on client
         if (async || this.props[key].error) {
+          this.props.update();
+        }
+      },
+      componentWillReceiveProps(nextProps) {
+        if (reloadWhen(this.props, nextProps)) {
           this.props.update();
         }
       }
