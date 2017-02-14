@@ -16,21 +16,21 @@ const postsResolver = {
   }
 };
 
-const enhance = quest({
+const withPosts = quest({
   resolver: postsResolver,
   async: true
 });
 
-const Posts = ({ posts }) => (
+const Items = ({ posts }) => (
   <div>
     {posts.result
-      ? posts.result.map(post => <Post post={post} />)
+      ? posts.result.map(post => <Item entry={post} />)
       : <Loading />
     }
   </div>
 );
 
-export default enhance(Posts);
+export default withPosts(Items);
 ```
 
 ### Introduction
