@@ -1,5 +1,7 @@
 import { compose } from 'redux';
 import { connect } from 'react-redux';
+import when from 'recompose/branch';
+import mapProps from 'recompose/mapProps';
 import withProps from 'recompose/withProps';
 import lifecycle from 'recompose/lifecycle';
 import omitProps from './omitProps';
@@ -74,6 +76,35 @@ var withData = ({
     withProps(props => ({
       [`get${capitalize(key)}`]: () => props.update()
     })),
+    // Once there's the data is resolved, we can manipulate the result
+    when(props => props[key].result, compose(
+      when(
+        () => selector,
+        mapProps(props => ({
+          ...props,
+          [key]: {
+            ...props[key],
+            result: selector(props[key].result)
+          }
+        }))
+      ),
+      when(
+        () => mapToProps,
+        mapProps(props => ({
+          ...props,
+          ...mapToProps(props[key].result)
+        }))
+      ),
+      // if we can guarantee the result will always be there
+      // and mutations are impossible we map the result to props directly
+      when(
+        () => immutable && !async,
+        mapProps(props => ({
+          ...props,
+          [key]: props[key].result
+        }))
+      )
+    )),
     omitProps(['update'])
   );
 };
