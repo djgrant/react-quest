@@ -1,0 +1,19 @@
+{
+  "env": {
+    "build": {
+      "presets": [
+        "stage-3",
+        ["latest", {
+          "es2015": { "modules": false }
+        }]
+      ],
+    },
+    "test": {
+      "presets": [
+        "react",
+        "stage-3",
+        "latest"
+      ]
+    }
+  }
+}

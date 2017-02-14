@@ -1,0 +1,52 @@
+{
+  "name": "redux-remote-data",
+  "description": "Declarative data fetching for Redux apps",
+  "author": "Daniel Grant",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/djgrant/redux-remote-data"
+  },
+  "scripts": {
+    "test": "jest --watch",
+    "build": "npm run build:umd && npm run build:es",
+    "build:umd": "BABEL_ENV=build webpack --config webpack.build.js -p",
+    "build:es": "BABEL_ENV=build babel src --out-dir lib --ignore spec.js,test.js"
+  },
+  "main": "lib/index.umd.js",
+  "module": "lib/index.js",
+  "files": [
+    "lib"
+  ],
+  "devDependencies": {
+    "babel-core": "^6.23.1",
+    "babel-jest": "^18.0.0",
+    "babel-loader": "^6.3.0",
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-latest": "^6.22.0",
+    "babel-preset-react": "^6.23.0",
+    "babel-preset-stage-3": "^6.22.0",
+    "enzyme": "^2.7.1",
+    "jest": "^18.1.0",
+    "react": "^15.4.2",
+    "react-addons-test-utils": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "react-redux": "^5.0.2",
+    "redux": "^3.6.0",
+    "webpack": "^2.2.1"
+  },
+  "peerDependencies": {
+    "react": "^0.14.0 || ^15.0.0-0",
+    "react-redux": "^5.0.0-0",
+    "redux": "^3.0.0-0"
+  },
+  "keywords": [
+    "redux",
+    "asyc",
+    "declarative",
+    "data",
+    "fetching",
+    "ssr"
+  ]
+}
