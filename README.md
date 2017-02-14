@@ -16,12 +16,16 @@ const postsResolver = {
 };
 
 const enhance = quest({
-  resolver: postsResolver
+  resolver: postsResolver,
+  async: true
 });
 
 const Posts = ({ posts }) => (
   <div>
-    {posts.result && posts.result.map(post => <Post post={post} />)}
+    {posts.result
+      ? posts.result.map(post => <Post post={post} />)
+      : <Loading />
+    }
   </div>
 );
 
