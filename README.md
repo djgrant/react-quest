@@ -34,4 +34,4 @@ export default enhance(Posts);
 
 ### Introduction
 
-redux-quest is a lightweight library that ensures data from remote resources is passed into React components as and when it is needed.
+redux-quest is a lightweight library (2kb gzip) that ensures React components receive data from remote sources as and when it is needed.
