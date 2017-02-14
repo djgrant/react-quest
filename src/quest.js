@@ -10,7 +10,7 @@ import { initialState } from '../ducks/_data_/reducer';
 
 var never = () => false;
 
-var withData = ({
+var quest = ({
   resolver,
   selector,
   mapToProps,
@@ -109,7 +109,7 @@ var withData = ({
   );
 };
 
-export default withData;
+export default quest;
 
 function capitalize(string) {
   return string[0].toUpperCase() + string.slice(1);

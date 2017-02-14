@@ -11,7 +11,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'lib'),
     filename: 'index.umd.js',
-    library: 'redux-remote-data',
+    library: 'redux-quest',
     libraryTarget: 'umd'
   },
   module: {

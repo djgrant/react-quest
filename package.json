@@ -1,17 +1,17 @@
 {
-  "name": "redux-remote-data",
+  "name": "redux-quest",
   "description": "Declarative data fetching for universal Redux apps",
   "author": "Daniel Grant",
   "version": "0.1.0",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/djgrant/redux-remote-data"
+    "url": "https://github.com/djgrant/redux-quest"
   },
   "scripts": {
     "test": "jest --watch",
     "build": "npm run build:umd && npm run build:es",
-    "build:umd": "BABEL_ENV=build webpack --config webpack.build.js -p",
+    "build:umd": "BABEL_ENV=build webpack --config webpack.config.build.js -p",
     "build:es": "BABEL_ENV=build babel src --out-dir lib --ignore spec.js,test.js"
   },
   "main": "lib/index.umd.js",
