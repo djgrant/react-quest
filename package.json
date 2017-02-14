@@ -19,6 +19,9 @@
   "files": [
     "lib"
   ],
+  "dependencies": {
+    "recompose": "^0.22.0"
+  },
   "devDependencies": {
     "babel-core": "^6.23.1",
     "babel-jest": "^18.0.0",
