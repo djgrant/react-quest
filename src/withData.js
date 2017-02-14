@@ -1,5 +1,6 @@
 import { compose } from 'redux';
 import { connect } from 'react-redux';
+import withProps from 'recompose/withProps';
 import lifecycle from 'recompose/lifecycle';
 import omitProps from './omitProps';
 import { updateData } from '../ducks/_data_/actions';
@@ -9,7 +10,10 @@ var never = () => false;
 
 var withData = ({
   resolver,
+  selector,
+  mapToProps,
   async = false,
+  immutable = false,
   reloadWhen = never
 }) => {
   var key = resolver.key;
@@ -52,8 +56,30 @@ var withData = ({
         }
       }
     }),
+    // add programatic methods
+    withProps(props => Object.keys(resolver).reduce(
+      (result, method) => ({
+        ...result,
+        // allow method to be called with some options and a dispatcher
+        // so the resolver can take responsibility for updating the cached data
+        [`${method}${capitalize(key)}`]: options => resolver[method]({
+          ...options,
+          props,
+          data: props[key].result,
+          update: props.update
+        })
+      }), {})
+    ),
+    // Programatic GET handles update itself
+    withProps(props => ({
+      [`get${capitalize(key)}`]: () => props.update()
+    })),
     omitProps(['update'])
   );
 };
 
 export default withData;
+
+function capitalize(string) {
+  return string[0].toUpperCase() + string.slice(1);
+}
