@@ -1,6 +1,7 @@
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import lifecycle from 'recompose/lifecycle';
+import omitProps from './omitProps';
 import { updateData } from '../ducks/_data_/actions';
 import { initialState } from '../ducks/_data_/reducer';
 
@@ -42,7 +43,8 @@ var withData = ({
           this.props.update();
         }
       }
-    })
+    }),
+    omitProps(['update'])
   );
 };
 
