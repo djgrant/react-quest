@@ -2,7 +2,7 @@
   "name": "redux-quest",
   "description": "Declarative data fetching for universal Redux apps",
   "author": "Daniel Grant",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "license": "MIT",
   "repository": {
     "type": "git",
