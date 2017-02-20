@@ -5,17 +5,17 @@ import mapProps from 'recompose/mapProps';
 import withProps from 'recompose/withProps';
 import lifecycle from 'recompose/lifecycle';
 import omitProps from './utils/omitProps';
-import { updateData } from './actions';
+import { startQuest, resolveQuest } from './actions';
 import { initialState } from './reducer';
 
 var never = () => false;
 
 var quest = ({
   resolver,
+  async = false,
+  mapDirect = false,
   selector,
   mapToProps,
-  async = false,
-  immutable = false,
   reloadWhen = never
 }) => {
   var key = resolver.key;
@@ -26,13 +26,13 @@ var quest = ({
         [key]: state._data_[key] || initialState
       }),
       (dispatch, props) => ({
-        update: next => {
+        updateData: next => {
           if (next === undefined) {
-            dispatch(updateData(key, resolver.get.bind(null, props)));
+            dispatch(startQuest(key, resolver.get.bind(null, props)));
           } else if (typeof next === 'function') {
-            dispatch(updateData(key, next));
+            dispatch(startQuest(key, next));
           } else {
-            dispatch(updateData(key, () => Promise.resolve({ result: next })));
+            dispatch(resolveQuest(key, next));
           }
         }
       })
@@ -43,48 +43,48 @@ var quest = ({
         this.getData = resolver.get.bind(null, this.props);
         // if the data isn't already being fetched into the store add it
         if (!async && !this.props[key].completed && !this.props[key].inProgress) {
-          this.props.update();
+          this.props.updateData();
         }
       },
       componentDidMount() {
         // if the data failed on the server, try again on client
         if (async || this.props[key].error) {
-          this.props.update();
+          this.props.updateData();
         }
       },
       componentWillReceiveProps(nextProps) {
         if (reloadWhen(this.props, nextProps)) {
-          this.props.update();
+          this.props.updateData();
         }
       }
     }),
     // add programatic methods
     withProps(props => Object.keys(resolver).reduce(
-      (result, method) => ({
-        ...result,
+      (accProps, method) => ({
+        ...accProps,
         // allow method to be called with some options and a dispatcher
         // so the resolver can take responsibility for updating the cached data
         [`${method}${capitalize(key)}`]: options => resolver[method]({
           ...options,
           props,
-          data: props[key].result,
-          update: props.update
+          data: props[key].data,
+          updateData: props.updateData
         })
       }), {})
     ),
     // Programatic GET handles update itself
     withProps(props => ({
-      [`get${capitalize(key)}`]: () => props.update()
+      [`get${capitalize(key)}`]: () => props.updateData()
     })),
-    // Once there's the data is resolved, we can manipulate the result
-    when(props => props[key].result, compose(
+    // Once there's the data is resolved, we can manipulate the resulting data
+    when(props => props[key].data, compose(
       when(
         () => selector,
         mapProps(props => ({
           ...props,
           [key]: {
             ...props[key],
-            result: selector(props[key].result)
+            data: selector(props[key].data)
           }
         }))
       ),
@@ -92,16 +92,16 @@ var quest = ({
         () => mapToProps,
         mapProps(props => ({
           ...props,
-          ...mapToProps(props[key].result)
+          ...mapToProps(props[key].data, props)
         }))
       ),
-      // if we can guarantee the result will always be there
-      // and mutations are impossible we map the result to props directly
+      // in certain cases e.g. the resulting data is always resolved
+      // the data can be mapped directly to the key prop
       when(
-        () => immutable && !async,
+        () => mapDirect,
         mapProps(props => ({
           ...props,
-          [key]: props[key].result
+          [key]: props[key].data
         }))
       )
     )),

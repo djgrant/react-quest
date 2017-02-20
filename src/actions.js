@@ -1,13 +1,21 @@
-export function updateData(key, task) {
+export function startQuest(key, resolverMethod) {
   return dispatch => {
-    dispatch({ type: 'FETCHING_DATA', key });
+    dispatch({ type: '@quest/FETCHING_DATA', key });
 
-    return task()
-      .then(result => {
-        dispatch({ type: 'FETCHED_DATA', key, result });
+    return resolverMethod()
+      .then(data => {
+        dispatch(resolveQuest(key, data));
       })
       .catch(error => {
-        dispatch({ type: 'FETCHED_DATA', key, error: error.toString() });
+        dispatch(rejectQuest(key, error));
       });
   };
+}
+
+export function resolveQuest(key, data) {
+  return { type: '@quest/FETCHED_DATA', key, data };
+}
+
+export function rejectQuest(key, error) {
+  return { type: '@quest/FETCHED_DATA', key, error: error.toString() };
 }
