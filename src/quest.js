@@ -66,7 +66,6 @@ var quest = ({
         // so the resolver can take responsibility for updating the cached data
         [`${method}${capitalize(key)}`]: options => resolver[method]({
           ...options,
-          props,
           data: props[key].data,
           updateData: props.updateData
         })
