@@ -35,8 +35,15 @@ export default withPosts(Items);
 
 ## Introduction
 
-redux-quest is a lightweight library (2kb gzip) that ensures React components receive data from remote sources as and when it is needed.
-
+A lightweight (2kb gzip) yet impressively featured library for:
+- colocating components and their data requirements
+- handling simple functions that return data or a promise
+- resolving data server-side or asynchronously in the browser
+- rendering loading states in the view
+- caching resolved data
+- mutating remote data
+- performing optimistic updates
+- reloading data programmatically or based on prop changes
 
 ## Documentation
 
@@ -131,4 +138,4 @@ Todo
 redux-quest was inspired by a few projects in particular:
 - [Relay](https://facebook.github.io/relay/), which first introduced the idea of colocating data queries and components
 - [Apollo](http://dev.apollodata.com/), whose React client proved the versatility of redux as a local cache and also inspired the idea of using resolvers (albeit in a different fashion) to abstract the data fetching mechanics
-- [react-jobs](https://github.com/ctrlplusb/react-jobs), which influenced the design of the quest HOC API.
+- [react-jobs](https://github.com/ctrlplusb/react-jobs), which influenced the design of the quest HOC API
