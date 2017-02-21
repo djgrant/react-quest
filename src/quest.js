@@ -11,6 +11,7 @@ import { initialState } from './reducer';
 var never = () => false;
 
 var quest = ({
+  query = null,
   resolver,
   async = false,
   mapDirect = false,
@@ -28,7 +29,7 @@ var quest = ({
       (dispatch, props) => ({
         updateData: next => {
           if (next === undefined) {
-            dispatch(startQuest(key, resolver.get.bind(null, props)));
+            dispatch(startQuest(key, resolver.get.bind(null, ({ query }))));
           } else if (typeof next === 'function') {
             dispatch(startQuest(key, next));
           } else {
@@ -39,8 +40,6 @@ var quest = ({
     ),
     lifecycle({
       componentWillMount() {
-        // Call resolver with props - resolver = props => fn(props)
-        this.getData = resolver.get.bind(null, this.props);
         // if the data isn't already being fetched into the store add it
         if (!async && !this.props[key].completed && !this.props[key].inProgress) {
           this.props.updateData();
@@ -64,8 +63,8 @@ var quest = ({
         ...accProps,
         // allow method to be called with some options and a dispatcher
         // so the resolver can take responsibility for updating the cached data
-        [`${method}${capitalize(key)}`]: options => resolver[method]({
-          ...options,
+        [`${method}${capitalize(key)}`]: query => resolver[method]({
+          ...query,
           data: props[key].data,
           updateData: props.updateData
         })
