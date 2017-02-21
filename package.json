@@ -12,7 +12,7 @@
     "test": "jest",
     "dev": "jest --watch",
     "build": "npm run build:umd && npm run build:es",
-    "build:umd": "BABEL_ENV=build webpack --config webpack.config.build.js -p",
+    "build:umd": "BABEL_ENV=build webpack --config webpack.config.build.js",
     "build:es": "BABEL_ENV=build babel src --out-dir lib --ignore spec.js,test.js"
   },
   "main": "lib/index.umd.js",
