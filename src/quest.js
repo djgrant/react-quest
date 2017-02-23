@@ -20,6 +20,7 @@ var quest = ({
   reloadWhen = never
 }) => {
   var key = resolver.key;
+
   return compose(
     // map data already in store to a data prop
     connect(
@@ -28,8 +29,12 @@ var quest = ({
       }),
       (dispatch, props) => ({
         updateData: next => {
+          var options = {
+            query: typeof query === 'function' ? query(props) : query
+          };
+
           if (next === undefined) {
-            dispatch(startQuest(key, resolver.get.bind(null, ({ query }))));
+            dispatch(startQuest(key, resolver.get.bind(null, options)));
           } else if (typeof next === 'function') {
             dispatch(startQuest(key, next));
           } else {
