@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import when from 'recompose/branch';
 import mapProps from 'recompose/mapProps';
 import withProps from 'recompose/withProps';
-import lifecycle from 'recompose/lifecycle';
 import renderNothing from 'recompose/renderNothing';
 import omitProps from './utils/omitProps';
 import { startQuest, resolveQuest } from './actions';
@@ -47,14 +46,12 @@ var quest = (
         }
       })
     ),
-    lifecycle({
+    Base => React.createClass({
       componentWillMount() {
         // if the data isn't already being fetched into the store add it
         if (
           !async && !this.props[key].completed && !this.props[key].inProgress
         ) {
-          // Allow https://www.npmjs.com/package/react-warmup to async traverse
-          // to warm up app store
           return this.props.updateData();
         }
       },
@@ -68,8 +65,19 @@ var quest = (
         if (reloadWhen(this.props, nextProps)) {
           this.props.updateData();
         }
+      },
+      render() {
+        return <Base {...this.props} />;
       }
     }),
+    // connect to the store again in case the dispatch(updateData) call
+    // in componentDidMount resolved sychronously
+    // Necesary for server rendering so sync quests can be run in single pass 
+    connect(
+      state => ({
+        [key]: state._data_[key] || initialState
+      })
+    ),
     // add programatic methods
     withProps(props =>
       Object.keys(resolver).filter(key => typeof key === 'function').reduce((
