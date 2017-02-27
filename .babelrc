@@ -2,6 +2,7 @@
   "env": {
     "build": {
       "presets": [
+        "react",
         "stage-3",
         ["latest", {
           "es2015": { "modules": false }
