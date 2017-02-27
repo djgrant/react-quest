@@ -1,3 +1,4 @@
+import React from 'react';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import when from 'recompose/branch';
@@ -72,7 +73,7 @@ var quest = (
     }),
     // connect to the store again in case the dispatch(updateData) call
     // in componentDidMount resolved sychronously
-    // Necesary for server rendering so sync quests can be run in single pass 
+    // Necesary for server rendering so sync quests can be run in single pass
     connect(
       state => ({
         [key]: state._data_[key] || initialState
