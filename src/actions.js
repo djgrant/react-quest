@@ -2,7 +2,9 @@ export function startQuest(key, resolverMethod) {
   return dispatch => {
     dispatch({ type: '@quest/FETCHING_DATA', key });
 
-    return resolverMethod()
+    var promises = [].concat(resolverMethod());
+
+    promises.forEach(p => p
       .then(data => {
         dispatch(resolveQuest(key, data));
         return data;
@@ -10,7 +12,9 @@ export function startQuest(key, resolverMethod) {
       .catch(error => {
         dispatch(rejectQuest(key, error));
         return data;
-      });
+      }));
+
+    return Promise.all(promises);
   };
 }
 
