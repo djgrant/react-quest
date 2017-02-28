@@ -5,9 +5,11 @@ export function startQuest(key, resolverMethod) {
     return resolverMethod()
       .then(data => {
         dispatch(resolveQuest(key, data));
+        return data;
       })
       .catch(error => {
         dispatch(rejectQuest(key, error));
+        return data;
       });
   };
 }
