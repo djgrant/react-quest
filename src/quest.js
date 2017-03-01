@@ -124,7 +124,7 @@ var quest = (
         ...props,
         [key]: {
           ...props[key].data,
-          data: mapData(data)
+          data: mapData(props[key].data)
         }
       }))
     ),
