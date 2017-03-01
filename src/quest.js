@@ -21,7 +21,9 @@ var quest = (
     selector,
     mapToProps,
     mapData,
-    reloadWhen = never
+    defaultData,
+    fetchOnce,
+    refetchWhen = never
   },
   branch
 ) => {
@@ -44,27 +46,27 @@ var quest = (
             return dispatch(startQuest(key, next));
           }
           return dispatch(resolveQuest(key, next));
-
         }
       })
     ),
     Base => React.createClass({
       componentWillMount() {
+
         // if the data isn't already being fetched into the store add it
         if (
-          !async && !this.props[key].completed && !this.props[key].inProgress
+          !async && shouldFetch(fetchOnce, this.props) && !this.props[key].completed && !this.props[key].inProgress
         ) {
           return this.props.updateData();
         }
       },
       componentDidMount() {
         // if the data failed on the server, try again on client
-        if (async || this.props[key].error) {
+        if (async && shouldFetch(fetchOnce, this.props) || this.props[key].error) {
           this.props.updateData();
         }
       },
       componentWillReceiveProps(nextProps) {
-        if (reloadWhen(this.props, nextProps)) {
+        if (shouldFetch(fetchOnce, this.props) || refetchWhen(this.props, nextProps)) {
           this.props.updateData();
         }
       },
@@ -75,11 +77,9 @@ var quest = (
     // connect to the store again in case the dispatch(updateData) call
     // in componentDidMount resolved sychronously
     // Necesary for server rendering so sync quests can be run in single pass
-    connect(
-      state => ({
-        [key]: state._data_[key] || initialState
-      })
-    ),
+    connect(state => ({
+      [key]: state._data_[key] || initialState
+    })),
     // add programatic methods
     withProps(props =>
       Object.keys(resolver).filter(key => typeof key === 'function').reduce((
@@ -123,7 +123,7 @@ var quest = (
       mapProps(props => ({
         ...props,
         [key]: {
-          ...props[key].data,
+          ...props[key],
           data: mapData(props[key].data)
         }
       }))
@@ -141,6 +141,16 @@ var quest = (
       props => waitForData && (!hasData(props[key]) || hasError(props[key])),
       branch ? branch : renderNothing
     ),
+    when(
+      props => !hasData(props[key]) && defaultData,
+      mapProps(props => ({
+        ...props,
+        [key]: {
+          ...props[key],
+          data: defaultData
+        }
+      }))
+    ),
     omitProps(['updateData'])
   );
 };
@@ -155,6 +165,13 @@ function hasError(state) {
 
 function capitalize(string) {
   return string[0].toUpperCase() + string.slice(1);
+}
+
+function shouldFetch(fetchOnce, props) {
+  if (typeof fetchOnce !== 'function') {
+    return true
+  }
+  return fetchOnce(props);
 }
 
 quest.sync = opts => quest({ ...opts, mapDirect: true, waitForData: true });
