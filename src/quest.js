@@ -154,7 +154,7 @@ var quest = (
         ...props,
         [key]: {
           ...props[key],
-          data: typeof defaultType === 'function'
+          data: typeof defaultData === 'function'
             ? defaultData(props)
             : defaultData
         }
