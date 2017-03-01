@@ -20,6 +20,7 @@ var quest = (
     mapDirect = false,
     selector,
     mapToProps,
+    mapData,
     reloadWhen = never
   },
   branch
@@ -115,6 +116,16 @@ var quest = (
       mapProps(props => ({
         ...props,
         ...mapToProps(props[key].data, props)
+      }))
+    ),
+    when(
+      props => mapData && hasData(props[key]),
+      mapProps(props => ({
+        ...props,
+        [key]: {
+          ...props[key].data,
+          data: mapData(data)
+        }
       }))
     ),
     // in certain cases e.g. the resulting data is always resolved
