@@ -51,22 +51,29 @@ var quest = (
     ),
     Base => React.createClass({
       componentWillMount() {
-
         // if the data isn't already being fetched into the store add it
         if (
-          !async && shouldFetch(fetchOnce, this.props) && !this.props[key].completed && !this.props[key].inProgress
+          !async &&
+          shouldFetch(fetchOnce, this.props) &&
+          !this.props[key].completed &&
+          !this.props[key].inProgress
         ) {
           return this.props.updateData();
         }
       },
       componentDidMount() {
         // if the data failed on the server, try again on client
-        if (async && shouldFetch(fetchOnce, this.props) || this.props[key].error) {
+        if (
+          async && shouldFetch(fetchOnce, this.props) || this.props[key].error
+        ) {
           this.props.updateData();
         }
       },
       componentWillReceiveProps(nextProps) {
-        if (shouldFetch(fetchOnce, this.props) || refetchWhen(this.props, nextProps)) {
+        if (
+          shouldFetch(fetchOnce, this.props) ||
+          refetchWhen(this.props, nextProps)
+        ) {
           this.props.updateData();
         }
       },
@@ -147,7 +154,9 @@ var quest = (
         ...props,
         [key]: {
           ...props[key],
-          data: defaultData
+          data: typeof defaultType === 'function'
+            ? defaultData(props)
+            : defaultData
         }
       }))
     ),
@@ -169,7 +178,7 @@ function capitalize(string) {
 
 function shouldFetch(fetchOnce, props) {
   if (typeof fetchOnce !== 'function') {
-    return true
+    return true;
   }
   return fetchOnce(props);
 }
