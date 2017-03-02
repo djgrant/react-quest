@@ -11,7 +11,6 @@ export function startQuest(key, resolverMethod) {
       })
       .catch(error => {
         dispatch(rejectQuest(key, error));
-        return data;
       }));
 
     return Promise.all(promises);
