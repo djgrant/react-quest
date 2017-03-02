@@ -38,7 +38,9 @@ var quest = (
       (dispatch, props) => ({
         updateData: (next, nextProps) => {
           var options = {
-            query: typeof query === 'function' ? query(nextProps || props) : query
+            query: typeof query === 'function'
+              ? query(nextProps || props)
+              : query
           };
           if (next === undefined) {
             return dispatch(startQuest(key, resolver.get.bind(null, options)));
@@ -53,11 +55,22 @@ var quest = (
       componentWillMount() {
         this.fetched = false;
 
-        this.canFetchOnce = (nextProps) => {
-          if (this.fetched) {
+        this.canFetchOnce = nextProps => {
+          if (
+            // prevent fetching on every prop change
+            this.fetched ||
+            // don't refectch if store already hydrated
+            this.props[key].completed ||
+            this.props[key].inProgress
+          ) {
             return false;
           }
-          if (!fetchOnce) {
+          if (
+            // can fetch immediately
+            !fetchOnce ||
+            // if the data failed on the server, try again on client
+            this.props[key].error
+          ) {
             return true;
           }
           if (typeof fetchOnce !== 'function') {
@@ -66,30 +79,25 @@ var quest = (
           if (fetchOnce(nextProps || this.props)) {
             return true;
           }
-          return false;
         };
 
         // if the data isn't already being fetched into the store add it
-        if (
-          !async &&
-          this.canFetchOnce() &&
-          !this.props[key].completed &&
-          !this.props[key].inProgress
-        ) {
+        if (!async && this.canFetchOnce()) {
           return this.props.updateData();
         }
       }
 
       componentDidMount() {
-        // if the data failed on the server, try again on client
-        if (async && this.canFetchOnce() || this.props[key].error) {
+        if (async && this.canFetchOnce()) {
           this.fetched = true;
           this.props.updateData();
         }
       }
 
       componentWillReceiveProps(nextProps) {
-        if (this.canFetchOnce(nextProps) || refetchWhen(this.props, nextProps)) {
+        if (
+          this.canFetchOnce(nextProps) || refetchWhen(this.props, nextProps)
+        ) {
           this.fetched = true;
           this.props.updateData(undefined, nextProps);
         }
