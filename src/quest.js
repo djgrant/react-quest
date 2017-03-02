@@ -36,9 +36,9 @@ var quest = (
         [key]: state._data_[key] || initialState
       }),
       (dispatch, props) => ({
-        updateData: next => {
+        updateData: (next, nextProps) => {
           var options = {
-            query: typeof query === 'function' ? query(props) : query
+            query: typeof query === 'function' ? query(nextProps || props) : query
           };
           if (next === undefined) {
             return dispatch(startQuest(key, resolver.get.bind(null, options)));
@@ -49,38 +49,56 @@ var quest = (
         }
       })
     ),
-    Base => React.createClass({
+    Base => class extends React.Component {
       componentWillMount() {
+        this.fetched = false;
+
+        this.canFetchOnce = (nextProps) => {
+          if (this.fetched) {
+            return false;
+          }
+          if (!fetchOnce) {
+            return true;
+          }
+          if (typeof fetchOnce !== 'function') {
+            return !!fetchOnce;
+          }
+          if (fetchOnce(nextProps || this.props)) {
+            return true;
+          }
+          return false;
+        };
+
         // if the data isn't already being fetched into the store add it
         if (
           !async &&
-          shouldFetch(fetchOnce, this.props) &&
+          this.canFetchOnce() &&
           !this.props[key].completed &&
           !this.props[key].inProgress
         ) {
           return this.props.updateData();
         }
-      },
+      }
+
       componentDidMount() {
         // if the data failed on the server, try again on client
-        if (
-          async && shouldFetch(fetchOnce, this.props) || this.props[key].error
-        ) {
+        if (async && this.canFetchOnce() || this.props[key].error) {
+          this.fetched = true;
           this.props.updateData();
         }
-      },
+      }
+
       componentWillReceiveProps(nextProps) {
-        if (
-          shouldFetch(fetchOnce, this.props) ||
-          refetchWhen(this.props, nextProps)
-        ) {
-          this.props.updateData();
+        if (this.canFetchOnce(nextProps) || refetchWhen(this.props, nextProps)) {
+          this.fetched = true;
+          this.props.updateData(undefined, nextProps);
         }
-      },
+      }
+
       render() {
         return <Base {...this.props} />;
       }
-    }),
+    },
     // connect to the store again in case the dispatch(updateData) call
     // in componentDidMount resolved sychronously
     // Necesary for server rendering so sync quests can be run in single pass
@@ -116,14 +134,16 @@ var quest = (
           ...props[key],
           data: selector(props[key].data)
         }
-      }))
+      })),
+      c => c
     ),
     when(
       props => mapToProps && hasData(props[key]),
       mapProps(props => ({
         ...props,
         ...mapToProps(props[key].data, props)
-      }))
+      })),
+      c => c
     ),
     when(
       props => mapData && hasData(props[key]),
@@ -133,7 +153,8 @@ var quest = (
           ...props[key],
           data: mapData(props[key].data)
         }
-      }))
+      })),
+      c => c
     ),
     // in certain cases e.g. the resulting data is always resolved
     // the data can be mapped directly to the key prop
@@ -142,11 +163,13 @@ var quest = (
       mapProps(props => ({
         ...props,
         [key]: props[key].data
-      }))
+      })),
+      c => c
     ),
     when(
       props => waitForData && (!hasData(props[key]) || hasError(props[key])),
-      branch ? branch : renderNothing
+      branch ? branch : renderNothing,
+      c => c
     ),
     when(
       props => !hasData(props[key]) && defaultData,
@@ -158,7 +181,8 @@ var quest = (
             ? defaultData(props)
             : defaultData
         }
-      }))
+      })),
+      c => c
     ),
     omitProps(['updateData'])
   );
@@ -174,13 +198,6 @@ function hasError(state) {
 
 function capitalize(string) {
   return string[0].toUpperCase() + string.slice(1);
-}
-
-function shouldFetch(fetchOnce, props) {
-  if (typeof fetchOnce !== 'function') {
-    return true;
-  }
-  return fetchOnce(props);
 }
 
 quest.sync = opts => quest({ ...opts, mapDirect: true, waitForData: true });
