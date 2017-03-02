@@ -1,12 +1,12 @@
-export var initialState = { inProgress: false, completed: false, error: null, data: null };
+export var initialState = { loading: false, ready: false, error: null, data: null };
 
 export default function reducer(state = {}, action) {
   if (action.type === '@quest/FETCHING_DATA') {
     return {
       ...state,
       [action.key]: {
-        inProgress: true,
-        completed: false,
+        loading: true,
+        ready: false,
         error: null,
         data: state[action.key] && state[action.key].data || null
       }
@@ -17,8 +17,8 @@ export default function reducer(state = {}, action) {
     return {
       ...state,
       [action.key]: {
-        inProgress: false,
-        completed: true,
+        loading: false,
+        ready: true,
         error: action.error || null,
         data: action.data || null
       }

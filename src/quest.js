@@ -60,8 +60,8 @@ var quest = (
             // prevent fetching on every prop change
             this.fetched ||
             // don't refectch if store already hydrated
-            this.props[key].completed ||
-            this.props[key].inProgress
+            this.props[key].ready ||
+            this.props[key].loading
           ) {
             return false;
           }
