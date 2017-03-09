@@ -56,6 +56,8 @@ A lightweight (2kb gzip) yet impressively featured library for:
 - [Reloading data on prop changes](#reoloading-data-on-prop-changes)
 - [Programmatically running resolver methods](#programmatically-running-resolver-methods)
 - [Adding mutative methods to resolvers](#adding-mutative-methods-to-resolvers)
+- [Updating the local data store on mutation events](#updating-the-local-data-store-on-mutation-events)
+- [Performing optimistic updates](#performing-optimistic-updates)
 - [Complete API reference](#complete-api-reference)
 
 ### Setup
@@ -128,7 +130,122 @@ Todo
 Todo
 
 ### Adding mutative methods to resolvers
-Todo
+Now that we know how to pass queries into resolvers and how to access resolver methods programmatically, we can add some mutative methods to our `postsResolver`. Let's add a method that creates new entries.
+
+```js
+var postsResolver = {
+  ...
+  create({ post }) {
+    fetch(POST_API_URL, {
+      method: 'POST',
+      body: JSON.stringify(post)
+    });
+  }
+};
+```
+
+To use this method, in we would just call it from a handler in the component:
+
+```js
+class NewPost extends Component {
+  handleSubmit(e) {
+    var post = e.data;
+    this.props.posts.create({ post });
+  }
+  render() { ... }
+}
+```
+
+### Updating the local data store on mutation events
+
+Calling the create method in the previous example creates a new post on the server but we still need to display the post that the user created in the UI.
+
+To update the local data store, return a promise that resolves with updated collection from the resolver's mutation method:
+
+```js
+var postsResolver = {
+  ...
+  create({ post }) {
+    return fetch(POST_API_URL, {
+      method: 'POST',
+      body: JSON.stringify(post)
+    })
+      .then(response => {
+        // once the server has created the new post
+        // get the latest collection of posts again
+        if (response.status === 201) {
+          // send another GET request and return a promise
+          // that resolves with the final data
+          return postsResolver.get();
+        }        
+      });
+  }
+};
+```
+
+In the above example we execute a second request to the API to fetch the updated resource. If however the response body of the POST request contains the complete updated collection of posts we could resolve the promise with that data instead, saving an extra round trip to the API:
+
+```js
+var postsResolver = {
+  ...
+  create({ post }) {
+    return fetch(POST_API_URL, {
+      method: 'POST',
+      body: JSON.stringify(post)
+    }).then(r => r.json());
+  }
+};
+```
+
+If you need to access to the original data collection (say if you the server only responds with the created resource) you can access it on the second argument passed to mutation methods:
+
+```js
+var postsResolver = {
+  ...
+  create({ post }, currentPosts) {
+    return fetch(POST_API_URL, {
+      method: 'POST',
+      body: JSON.stringify(post)
+    })
+      .then(r => r.json())
+      .then(newPost => {
+        return [...currentPosts, newPost];
+      });
+  }
+};
+```
+
+### Performing optimistic updates
+
+Suppose we want to immediately update the local data store with new data, even before it has been posted to the server? We can implement optimistic updates by returning an array of promises from mutation methods. The local data store will be updated with result of each promise as they resolve. Whichever promise resolves last will be Let's see it in action:
+
+```js
+var postsResolver = {
+  ...
+  create({ post }, currentPosts) {
+    var newPosts = [...currentPosts, post];
+    var optimisticUpdate = Promise.resolve(newPosts);
+    var serverUpdate = fetch(POST_API_URL, {
+      method: 'POST',
+      body: JSON.stringify(post)
+    })
+      .then(r => {
+        if (response.status === 201) {
+          return response.json();
+        }
+        // in case the resource is not created on the server
+        // reverse the optimistic update by resolving the 2nd promise
+        // with the original data
+        return currentPosts;
+      })
+      .catch(err => {
+        return data;
+      });
+
+    return [optimisticUpdate, serverUpdate];
+  }
+};
+```
 
 ### Complete API reference
 Todo
@@ -137,5 +254,5 @@ Todo
 
 redux-quest was inspired by a few projects in particular:
 - [Relay](https://facebook.github.io/relay/), which first introduced the idea of colocating data queries and components
-- [Apollo](http://dev.apollodata.com/), whose React client proved the versatility of redux as a local cache and also inspired the idea of using resolvers (albeit in a different fashion) to abstract the data fetching mechanics
+- [Apollo](http://dev.apollodata.com/), whose React client proved the versatility of redux as a local cache and that data requirements can be resolved server by recursing the react tree
 - [react-jobs](https://github.com/ctrlplusb/react-jobs), which influenced the design of the quest HOC API
