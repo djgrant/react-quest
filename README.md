@@ -197,7 +197,9 @@ var postsResolver = {
 };
 ```
 
-If you need to access to the original data collection (say if you the server only responds with the created resource) you can access it on the second argument passed to mutation methods:
+There are times when in order to form a complete update you'll need access to the data in the local store (say, for example, if your server responds with just the created resource and you need to add it to the existing collection).
+
+The current local data collection is passed as the second argument to all mutation methods:
 
 ```js
 var postsResolver = {
@@ -217,7 +219,7 @@ var postsResolver = {
 
 ### Performing optimistic updates
 
-Suppose we want to immediately update the local data store with new data, even before it has been posted to the server? We can implement optimistic updates by returning an array of promises from mutation methods. The local data store will be updated with result of each promise as they resolve. Whichever promise resolves last will be Let's see it in action:
+Suppose we want to immediately update the local data store with new data, even before it has been posted to the server? We can implement optimistic updates by returning an array of promises from mutation methods. The local data store will be updated with result of each promise as they resolve. Let's see it in action:
 
 ```js
 var postsResolver = {
