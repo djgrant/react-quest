@@ -52,8 +52,8 @@ A lightweight (2kb gzip) yet impressively featured library for:
 - [Asynchronous quests](#asynchronous-quests)
 - [Transforming resolved data](#transforming-resolved-data)
 - [Mapping data to props](#mapping-data-to-props)
-- [Reloading data on prop changes](#reoloading-data-on-prop-changes)
 - [Passing a query to the resolver](#passing-a-query-to-the-resolver)
+- [Fetching data on prop changes](#fetching-data-on-prop-changes)
 - [Programmatically running resolver methods](#programmatically-running-resolver-methods)
 - [Adding mutation methods to resolvers](#adding-mutation-methods-to-resolvers)
 - [Updating remote data](#updating-remote-data)
@@ -233,14 +233,18 @@ export default withNewPosts(Items);
 
 > ⚠️️ Only ever use `mapToProps: true` if you are certain the data will be resolved synchronously and you don't need to mutate it
 
-### Reloading data on prop changes
-Todo
-
 ### Passing a query to the resolver
 
 Resolver methods can be configured by creating a `query` object in a quest. The `query` option takes either a prop mapping function or a plain object:
 
 ```js
+var postsResolver = {
+  key: 'posts',
+  get(query) {
+    return fetch(`${POST_API_URL}?lang=${query.language}`).then(r => r.json())
+  }
+};
+
 query({
   resolver: postsResolver,
   query: {
@@ -263,6 +267,26 @@ compose(
     })
   })
 );
+```
+
+### Fetching data on prop changes
+
+To defer loading until a condition in the component's props is satisfied provide a predicate function to the `fetchOnce` option:
+
+```js
+quest({
+  resolver: postsResolver,
+  fetchOnce: props => props.ready
+})
+```
+
+To refetch a resource when a new condition is satisfied while a component is receiving new props, pass a predicate function to the `fetchWhen` option:
+
+```js
+quest({
+  resolver: postsResolver,
+  refetchWhen: (props, nextProps) => props.a !== props.b
+})
 ```
 
 ### Programmatically running resolver methods
