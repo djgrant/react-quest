@@ -17,8 +17,7 @@ const postsResolver = {
 };
 
 const withPosts = quest({
-  resolver: postsResolver,
-  async: true
+  resolver: postsResolver
 });
 
 const Items = ({ posts }) => (
@@ -155,7 +154,7 @@ By default quests will attempt to resolve their data requirements whenever they 
 ```js
 quest({
   resolver: postsResolver,
-  async: true
+  fetchOnServer: false
 });
 ```
 
@@ -166,7 +165,7 @@ A common requirement when working with remote data sources is to be able to tran
 ```js
 const withPostTitles = quest({
   resolver: postsResolver,
-  async: true,
+  fetchOnServer: false,
   transform: posts => posts.map(post => {
     id: post.slug,
     title: sentenceCase(posts.title)
