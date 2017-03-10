@@ -55,8 +55,8 @@ A lightweight (2kb gzip) yet impressively featured library for:
 - [Mapping data to props](#mapping-data-to-props)
 - [Reloading data on prop changes](#reoloading-data-on-prop-changes)
 - [Programmatically running resolver methods](#programmatically-running-resolver-methods)
-- [Adding mutative methods to resolvers](#adding-mutative-methods-to-resolvers)
-- [Updating the local data store on mutation events](#updating-the-local-data-store-on-mutation-events)
+- [Adding mutation methods to resolvers](#adding-mutation-methods-to-resolvers)
+- [Updating remote data](#updating-remote-data)
 - [Performing optimistic updates](#performing-optimistic-updates)
 - [Complete API reference](#complete-api-reference)
 
@@ -127,7 +127,7 @@ Todo
 Todo
 
 ### Programmatically running resolver methods
-Todo
+
 
 ### Adding mutative methods to resolvers
 Now that we know how to pass queries into resolvers and how to access resolver methods programmatically, we can add some mutative methods to our `postsResolver`. Let's add a method that creates new entries.
@@ -156,7 +156,7 @@ class NewPost extends Component {
 }
 ```
 
-### Updating the local data store on mutation events
+### Updating remote data
 
 Calling the create method in the previous example creates a new post on the server but we still need to display the post that the user created in the UI.
 
@@ -219,29 +219,63 @@ var postsResolver = {
 
 ### Performing optimistic updates
 
-Suppose we want to immediately update the local data store with new data, even before it has been posted to the server? We can implement optimistic updates by returning an array of promises from mutation methods. The local data store will be updated with result of each promise as they resolve. Let's see it in action:
+Suppose we want to immediately update the local data store, even before it has been created on the server? We can perform an optimistic update by, instead of returning a single promise from our mutation handler, returning _an array_ of promises. Each promise represents an update task and the local data store is updated with the result of each promise as it resolves. As a fail safe mechanism, if any of the promises reject then all updates are reverted.
+
+As a fail safe mechanism, if a promise rejects, any updates from promises that were resolved prior in the cycle will get reverted.
+
+Let's start with a simple example for this technique:
+
+```js
+var numberResolver = {
+  ...
+  create({ number }, currentNumber) {
+    // the first promise will resolve with the data we hope to add
+    var optimisticUpdate = Promise.resolve(number);
+
+    // the second promise will resolve with the actual result
+    var serverUpdate = new Promise(resolve => {
+      // mock an IO operation
+      setTimeout(() => {
+        resolve(2);
+      }, 100);
+    });
+
+    // return both promises in an array
+    return [optimisticUpdate, serverUpdate]
+  }
+}
+
+```
+
+In this example the local store is first updated with `number` and then 100ms later it is updated with `2`.
+
+Returning to our posts example, we can update the local store first with the user input using a promise that immediately resolves (the optimistic update), and then with the real result from the server. To add just a little extra complexity to the example, let's also handle cases where the server update fails. In such an event, we'd need to revert the effect of the optimistic update and resolve the server update with the original posts collection.
 
 ```js
 var postsResolver = {
   ...
   create({ post }, currentPosts) {
-    var newPosts = [...currentPosts, post];
+    var newPosts = [...currentPosts, newPost];
     var optimisticUpdate = Promise.resolve(newPosts);
+
     var serverUpdate = fetch(POST_API_URL, {
       method: 'POST',
       body: JSON.stringify(post)
     })
-      .then(r => {
-        if (response.status === 201) {
-          return response.json();
+      .then(response => {
+        if (response.status !== 201) {
+          // our optimism didn't pay off this time as
+          // the resource wasn't created on the server
+          // resolve this promise with the original data to revert the first update
+          return currentPosts;
         }
-        // in case the resource is not created on the server
-        // reverse the optimistic update by resolving the 2nd promise
-        // with the original data
-        return currentPosts;
+        return response.json();
       })
+      .then(newPost => [...currentPosts, newPost])
       .catch(err => {
-        return data;
+        console.log('Create post failed with error ', err)
+        // If the promise rejects the fail safe mechanism
+        // will revert all previous updates in this cycle
       });
 
     return [optimisticUpdate, serverUpdate];
@@ -255,6 +289,6 @@ Todo
 ## Credits
 
 redux-quest was inspired by a few projects in particular:
-- [Relay](https://facebook.github.io/relay/), which first introduced the idea of colocating data queries and components
-- [Apollo](http://dev.apollodata.com/), whose React client proved the versatility of redux as a local cache and that data requirements can be resolved server by recursing the react tree
-- [react-jobs](https://github.com/ctrlplusb/react-jobs), which influenced the design of the quest HOC API
+- [Relay](https://facebook.github.io/relay/), which introduced the idea of colocating data queries and components
+- [Apollo](http://dev.apollodata.com/), whose React client proved the versatility of redux as a local cache
+- [react-jobs](https://github.com/ctrlplusb/react-jobs), which influenced the design of the quest higher order components
