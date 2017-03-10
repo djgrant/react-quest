@@ -37,8 +37,7 @@ export default withPosts(Items);
 
 A lightweight (2kb gzip) yet impressively featured library for:
 - colocating components and their data requirements
-- handling simple functions that return data or a promise
-- resolving data server-side or asynchronously in the browser
+- handling simple data resolving functions
 - rendering loading states in the view
 - caching resolved data
 - mutating remote data
@@ -51,9 +50,10 @@ A lightweight (2kb gzip) yet impressively featured library for:
 - [Server side resolution](#server-side-resolution)
 - [Creating resolvers](#creating-resolvers)
 - [Asynchronous quests](#asynchronous-quests)
-- [Querying resolved data](#querying-resolved-data)
+- [Transforming resolved data](#transforming-resolved-data)
 - [Mapping data to props](#mapping-data-to-props)
 - [Reloading data on prop changes](#reoloading-data-on-prop-changes)
+- [Passing a query to the resolver](#passing-a-query-to-the-resolver)
 - [Programmatically running resolver methods](#programmatically-running-resolver-methods)
 - [Adding mutation methods to resolvers](#adding-mutation-methods-to-resolvers)
 - [Updating remote data](#updating-remote-data)
@@ -80,7 +80,9 @@ var reducer = combineReducers({
 
 For server rendered apps you must wait for quests to be resolved before sending the rendered app down the wire.
 
-The recommended (and very simple) way of doing this is using [redux-ready](https://github.com/djgrant/redux-ready), following the instructions in its repo.
+There is a lot of work within the community on SSR solutions that render render component trees asynchronously and until the release of react fiber a standard approach is unlikely to emerge. Until such a time SSR is not formally supported.
+
+In the meantime you can try [redux-ready](https://github.com/djgrant/redux-ready) which is a simple solution that works well with tree that don't have nested quests, or [react-warmup](https://github.com/djgrant/react-warmup) which enables redux-quest to perform a cache warmup.
 
 ### Creating resolvers
 
@@ -112,21 +114,191 @@ In this example the resolved data will be keyed against a `posts` field in the r
 }
 ```
 
-A resolver can be re-used in multiple quests without causing additional fetching or duplication in the store.
+To use the resolver provide it as an option in a quest:
+
+```js
+const withPosts = quest({
+  resolver: postsResolver
+});
+
+const Items = ({ posts }) => (
+  <div>
+    {posts.result
+      ? posts.result.map(post => <Item entry={post} />)
+      : <Loading />
+    }
+  </div>
+);
+
+export default withPosts(Items);
+```
+
+This creates a quest object that is set on the components props under the resolver's key name:
+
+```js
+Items.propTypes = {
+  posts: PropType.shape({
+    data: PropType.any,
+    error: PropType.string,
+    loading: PropType.boolean,
+    complete: PropType.boolean,
+    get: PropType.function // You probably won't need to use this
+  })
+};
+```
+
+> A resolver can be re-used in multiple quests without causing additional fetching or duplication in the store.
 
 ### Asynchronous quests
-Todo
+By default quests will attempt to resolve their data requirements whenever they are mounted, including on server render passes. To defer loading until the component set `async: true` in the options block:
 
-### Querying resolved data
-Todo
+```js
+quest({
+  resolver: postsResolver,
+  async: true
+});
+```
+
+### Transforming resolved data
+
+A common requirement when working with remote data sources is to be able to transform the dataset set once it has been resolved. Developers are encouraged to write functions that transform data (known in the Redux land as selectors). You can pass a selector directly to `quest()` and it will take care of applying the function once the data has resolved.
+
+```js
+const withPostTitles = quest({
+  resolver: postsResolver,
+  async: true,
+  transform: posts => posts.map(post => {
+    id: post.slug,
+    title: sentenceCase(posts.title)
+  })
+});
+
+const PostList = ({ posts }) => (
+  <div>
+    {posts.result
+      ? (
+        <ul>
+          {posts.result.map(post =>
+            <li id={post.id} key={post.id}>{post.title}</li>
+          )}
+        </ul>
+      ) : (
+        <Loading />
+      )
+    }
+  </div>
+);
+
+export default withPostTitles(PostList);
+```
 
 ### Mapping data to props
-Todo
+
+You can map data directly to a component's props object. This is handy if you find yourself wanting to apply multiple selectors to the same dataset.
+
+`mapToProps` takes a prop mapping function that maps the resolved dataset to a props object. The created props object is then spread into the components own props.
+
+```js
+var withNewPosts = quest({
+  resolver: postsResolver,
+  mapToProps: posts => ({
+    newPosts: posts.filter(post => post.isNew),
+    otherPosts: getOtherPostsSelector
+  })
+});
+
+const Items = ({ posts, newPosts }) => (
+  {posts.completed &&
+    <div>{newPosts.result.map(post => <Item entry={post} />)}</div>}
+);
+
+export default withNewPosts(Items);
+```
+
+**Shorthand option**
+You can also pass a boolean `true` to mapToProps, which maps all the data directly to `props[resolverKey]`.
+
+```js
+const withPosts = quest({
+  resolver: postsResolver,
+  mapToProps: true
+});
+
+const Items = ({ posts }) => (
+  <div>{posts.result.map(post => <Item entry={post} />)}</div>
+);
+
+export default withNewPosts(Items);
+```
+
+> ⚠️️ Only ever use `mapToProps: true` if you are certain the data will be resolved synchronously and you don't need to mutate it
 
 ### Reloading data on prop changes
 Todo
 
+### Passing a query to the resolver
+
+Resolver methods can be configured by creating a `query` object in a quest. The `query` option takes either a prop mapping function or a plain object:
+
+```js
+query({
+  resolver: postsResolver,
+  query: {
+    language: 'en-GB'
+  }
+});
+```
+
+Queries can be paired nicely with react-redux's `connect` HOC:
+
+```js
+compose(
+  connect(state => ({
+    language: getSiteLanguage(state)
+  })),
+  quest({
+    resolver: postsResolver,
+    query: props => ({
+      language: props.language
+    })
+  })
+);
+```
+
 ### Programmatically running resolver methods
+
+In the examples so far the resolver's `get()` method has been called during lifecycle of a component or on changes to its props. But it is also possible to call a resolver's methods directly.
+
+Every method in a resolver is added to the quest object for direct access.
+
+```js
+var postsResolver = {
+  key: 'posts',
+  get() {
+    return fetch(POST_API_URL).then(r => r.json())
+  },
+  set() {
+    // perform a mutation
+  }
+};
+
+quest({
+  resolver: postsResolver
+})(Posts)
+
+Posts.propTypes = {
+  posts: PropType.shape({
+    get: PropType.function, // <-- Resolver methods are added to the quest object
+    set: PropType.function, // <--
+    data: PropType.any,
+    error: PropType.string,
+    loading: PropType.boolean,
+    complete: PropType.boolean
+  })
+};
+```
+
+This may not be particularly useful for resolvers that only contain a `get()` method, but it will come in handy when we start adding mutation methods to the resolver.
 
 
 ### Adding mutative methods to resolvers
