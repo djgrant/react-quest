@@ -19,6 +19,7 @@ export default function reducer(state = {}, action) {
       [action.key]: {
         loading: false,
         ready: true,
+        reverted: action.reverted || false,
         error: action.error || null,
         data: action.data || null
       }
