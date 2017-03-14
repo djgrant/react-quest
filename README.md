@@ -214,7 +214,8 @@ const Items = ({ posts, newPosts }) => (
 export default withNewPosts(Items);
 ```
 
-**Shorthand option**
+<!-- Not sure about including this as a documented feature yet
+**Map data directly to props**
 You can also pass a boolean `true` to mapToProps, which maps all the data directly to `props[resolverKey]`.
 
 ```js
@@ -231,6 +232,7 @@ export default withNewPosts(Items);
 ```
 
 > ⚠️️ Only ever use `mapToProps: true` if you are certain the data will be resolved synchronously and you don't need to mutate it
+-->
 
 ### Passing a query to the resolver
 
