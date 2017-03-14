@@ -11,6 +11,8 @@ import { initialState } from './reducer';
 
 var never = () => false;
 
+var promises = {};
+
 var quest = (
   {
     query = null,
@@ -60,8 +62,7 @@ var quest = (
             // prevent fetching on every prop change
             this.fetched ||
             // don't refectch if store already hydrated
-            this.props[key].ready ||
-            this.props[key].loading
+            this.props[key].ready
           ) {
             return false;
           }
@@ -81,9 +82,17 @@ var quest = (
           }
         };
 
-        // if the data isn't already being fetched into the store add it
+        // dispatch update if data isn't already being fetched into the store
         if (!async && this.canFetchOnce()) {
-          return this.props.updateData();
+          promises[key] = this.props.updateData();
+          return promises[key].then(() => {
+            delete promises[key];
+          });
+        }
+
+        // if quest is loading but not yet ready return the promise for ssr
+        if (this.props[key].loading) {
+          return promises[key];
         }
       }
 
