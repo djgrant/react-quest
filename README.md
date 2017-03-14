@@ -48,11 +48,11 @@ A lightweight (2kb gzip) yet impressively featured library for:
 - [Setup](#setup)
 - [Server side resolution](#server-side-resolution)
 - [Creating resolvers](#creating-resolvers)
-- [Asynchronous quests](#asynchronous-quests)
+- [Deferring fetching to browser](#deferring-fetching-to-browser)
+- [Fetching data on prop changes](#fetching-data-on-prop-changes)
 - [Transforming resolved data](#transforming-resolved-data)
 - [Mapping data to props](#mapping-data-to-props)
 - [Passing a query to the resolver](#passing-a-query-to-the-resolver)
-- [Fetching data on prop changes](#fetching-data-on-prop-changes)
 - [Programmatically running resolver methods](#programmatically-running-resolver-methods)
 - [Adding mutation methods to resolvers](#adding-mutation-methods-to-resolvers)
 - [Updating remote data](#updating-remote-data)
@@ -148,8 +148,8 @@ Items.propTypes = {
 
 > A resolver can be re-used in multiple quests without causing additional fetching or duplication in the store.
 
-### Asynchronous quests
-By default quests will attempt to resolve their data requirements whenever they are mounted, including on server render passes. To defer loading until the component set `async: true` in the options block:
+### Deferring fetching to the browser
+By default quests will attempt to resolve their data requirements whenever they are mounted, including on server render passes. To defer loading until the component set `fetchOnServer: false` in the options block:
 
 ```js
 quest({
@@ -158,15 +158,35 @@ quest({
 });
 ```
 
+### Fetching data on prop changes
+
+To defer loading until a condition in the component's props is satisfied provide a predicate function to the `fetchOnce` option:
+
+```js
+quest({
+  resolver: postsResolver,
+  fetchOnce: props => props.ready
+})
+```
+
+To refetch a resource when a new condition is satisfied while a component is receiving new props, pass a predicate function to the `fetchWhen` option:
+
+```js
+quest({
+  resolver: postsResolver,
+  refetchWhen: (props, nextProps) => props.a !== props.b
+})
+```
+
 ### Transforming resolved data
 
-A common requirement when working with remote data sources is to be able to transform the dataset set once it has been resolved. Developers are encouraged to write functions that transform data (known in the Redux land as selectors). You can pass a selector directly to `quest()` and it will take care of applying the function once the data has resolved.
+A common requirement when working with remote data sources is to be able to transform the dataset set once it has been resolved. Developers are encouraged to write functions (known as selectors in Redux land) that transform the resolved data into a new dataset. You can pass a selector function to the `mapData` option and redux-quest will take care of mapping the data once it arrives.
 
 ```js
 const withPostTitles = quest({
   resolver: postsResolver,
   fetchOnServer: false,
-  transform: posts => posts.map(post => {
+  mapData: posts => posts.map(post => {
     id: post.slug,
     title: sentenceCase(posts.title)
   })
@@ -268,26 +288,6 @@ compose(
     })
   })
 );
-```
-
-### Fetching data on prop changes
-
-To defer loading until a condition in the component's props is satisfied provide a predicate function to the `fetchOnce` option:
-
-```js
-quest({
-  resolver: postsResolver,
-  fetchOnce: props => props.ready
-})
-```
-
-To refetch a resource when a new condition is satisfied while a component is receiving new props, pass a predicate function to the `fetchWhen` option:
-
-```js
-quest({
-  resolver: postsResolver,
-  refetchWhen: (props, nextProps) => props.a !== props.b
-})
 ```
 
 ### Programmatically running resolver methods

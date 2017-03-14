@@ -17,15 +17,15 @@ var quest = (
   {
     query = null,
     resolver,
-    async = false,
-    waitForData = false,
-    mapDirect = false,
-    selector,
-    mapToProps,
     mapData,
-    defaultData,
+    mapToProps,
+    fetchOnServer = true,
     fetchOnce,
-    refetchWhen = never
+    refetchWhen = never,
+    // undocumented options
+    defaultData,
+    waitForData = false,
+    mapDirect = false
   },
   branch
 ) => {
@@ -83,7 +83,7 @@ var quest = (
         };
 
         // dispatch update if data isn't already being fetched into the store
-        if (!async && this.canFetchOnce()) {
+        if (fetchOnServer && this.canFetchOnce()) {
           promises[key] = this.props.updateData();
           return promises[key].then(() => {
             delete promises[key];
@@ -97,7 +97,7 @@ var quest = (
       }
 
       componentDidMount() {
-        if (async && this.canFetchOnce()) {
+        if (!fetchOnServer && this.canFetchOnce()) {
           this.fetched = true;
           this.props.updateData();
         }
@@ -144,12 +144,12 @@ var quest = (
     })),
     // Once there's the data is resolved, we can manipulate the resulting data
     when(
-      props => selector && hasData(props[key]),
+      props => mapData && hasData(props[key]),
       mapProps(props => ({
         ...props,
         [key]: {
           ...props[key],
-          data: selector(props[key].data)
+          data: mapData(props[key].data)
         }
       })),
       c => c
@@ -159,17 +159,6 @@ var quest = (
       mapProps(props => ({
         ...props,
         ...mapToProps(props[key].data, props)
-      })),
-      c => c
-    ),
-    when(
-      props => mapData && hasData(props[key]),
-      mapProps(props => ({
-        ...props,
-        [key]: {
-          ...props[key],
-          data: mapData(props[key].data)
-        }
       })),
       c => c
     ),
