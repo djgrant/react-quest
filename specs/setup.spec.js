@@ -1,22 +1,13 @@
 import React from 'react';
-import { createStore, combineReducers, applyMiddleware } from 'redux';
-import thunk from 'redux-thunk';
-import { Provider } from 'react-redux';
+import { compose } from 'redux';
 import { mount } from 'enzyme';
 import quest from '../src';
 import { reducer as questReducer } from '../src';
+import { createStore, withStore, Items } from './specUtils';
 
-var store = createStore(combineReducers({
-  _data_: questReducer
-}), applyMiddleware(thunk));
+describe('quest: setup', function() {
+  const store = createStore();
 
-var withStoreContext = Component => (
-  <Provider store={store}>
-    <Component />
-  </Provider>
-);
-
-describe('quest', function() {
   it('requires a resolver', function() {
     expect(() => {
       quest();
@@ -65,11 +56,12 @@ describe('quest', function() {
       get: () => [1,2,3]
     };
 
-    const Items = quest({ resolver: itemsResolver })(
-      props => <div>{JSON.stringify(props.items)}</div>
-    );
+    const ItemsWithData = compose(
+      withStore(store),
+      quest({ resolver: itemsResolver })
+    )(Items);
 
-    mount(withStoreContext(Items));
+    mount(<ItemsWithData />);
     var state = store.getState()._data_;
     expect(state).toHaveProperty('items');
   });
