@@ -6,6 +6,10 @@ import when from 'recompose/branch';
 import mapProps from 'recompose/mapProps';
 import withProps from 'recompose/withProps';
 import renderNothing from 'recompose/renderNothing';
+import toClass from 'recompose/toClass';
+import setDisplayName from 'recompose/setDisplayName';
+import getDisplayName from 'recompose/getDisplayName';
+import wrapDisplayName from 'recompose/wrapDisplayName';
 import { omitProps } from './utils';
 import { startQuest, resolveQuest } from './actions';
 import { defaultState } from './reducer';
@@ -31,13 +35,20 @@ var quest = (
   branch
 ) => {
   invariant(typeof resolver === 'object', 'quests must be passed a resolver');
-  invariant(typeof resolver.key === 'string', 'resolvers must contain a valid key');
-  invariant(typeof resolver.get === 'function', 'resolvers must contain a get() method');
+  invariant(
+    typeof resolver.key === 'string',
+    'resolvers must contain a valid key'
+  );
+  invariant(
+    typeof resolver.get === 'function',
+    'resolvers must contain a get() method'
+  );
 
   var key = resolver.key;
 
   return compose(
     // map data already in store to a data prop
+    setDisplayName('Quest'),
     connect(
       state => ({
         [key]: state._data_[key] || defaultState
@@ -130,29 +141,25 @@ var quest = (
     connect(state => ({
       [key]: state._data_[key] || defaultState
     })),
+    omitProps(['updateData', 'dispatch']),
     // add programatic methods
     withProps(props =>
-      Object.keys(resolver).filter(key => typeof key === 'function').reduce((
-        accProps,
-        method
-      ) => ({
-        ...accProps,
-        // methods can be called with a query
-        [key]: {
-          ...props[key],
-          [method]: query => props.updateData(
-            resolver[method]({
-              ...query,
-              data: props[key].data
-            })
-          )
-        }
-      }), {})),
-    // Programatic GET handles update itself
-    // withProps(props => ({
-    //   [`get${capitalize(key)}`]: () => props.updateData()
-    // })),
-    // Once there's the data is resolved, we can manipulate the resulting data
+      Object.keys(resolver)
+        .filter(key => typeof resolver[key] === 'function')
+        .reduce(
+          (acc, methodName) => ({
+            ...acc,
+            [key]: {
+              ...props[key],
+              [methodName]: query => {
+                const currentData = props[key].data;
+                const method = resolver[methodName];
+                props.updateData(method(query, currentData));
+              }
+            }
+          }),
+          {}
+        )),
     when(
       props => mapData && hasData(props[key]),
       mapProps(props => ({
@@ -161,16 +168,14 @@ var quest = (
           ...props[key],
           data: mapData(props[key].data)
         }
-      })),
-      c => c
+      }))
     ),
     when(
       props => mapToProps && hasData(props[key]),
       mapProps(props => ({
         ...props,
         ...mapToProps(props[key].data, props)
-      })),
-      c => c
+      }))
     ),
     // in certain cases e.g. the resulting data is always resolved
     // the data can be mapped directly to the key prop
@@ -179,13 +184,11 @@ var quest = (
       mapProps(props => ({
         ...props,
         [key]: props[key].data
-      })),
-      c => c
+      }))
     ),
     when(
       props => waitForData && (!hasData(props[key]) || hasError(props[key])),
-      branch ? branch : renderNothing,
-      c => c
+      branch ? branch : renderNothing
     ),
     when(
       props => !hasData(props[key]) && defaultData,
@@ -197,10 +200,11 @@ var quest = (
             typeof defaultData === 'function' ? defaultData(props) : defaultData
           )
         }
-      })),
-      c => c
+      }))
     ),
-    omitProps(['updateData'])
+    // wrap in class so BaseComponent appears as own component in devtools
+    // maybe there is a better way to do this
+    toClass
   );
 };
 
