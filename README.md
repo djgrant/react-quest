@@ -34,14 +34,7 @@ export default withPosts(Items);
 
 ## Introduction
 
-A lightweight (2kb gzip) yet impressively featured library for:
-- colocating components and their data requirements
-- handling simple data resolving functions
-- rendering loading states in the view
-- caching resolved data
-- mutating remote data
-- performing optimistic updates
-- reloading data programmatically or based on prop changes
+A lightweight (2kb gzip) yet impressively featured library for colocating components and their data requirements, handling simple data resolving functions, mutating remote data, performing optimistic updates, reloading data on prop changes or programmatically, and much more!
 
 ## Documentation
 
@@ -349,8 +342,12 @@ class NewPost extends Component {
     var post = e.data;
     this.props.posts.create({ post });
   }
-  render() { ... }
+  render() {
+    return <button onClick={this.handleSubmit}>New Post</button>
+  }
 }
+
+export default quest({ resolver: postsResolver })(NewPost);
 ```
 
 ### Updating remote data
@@ -378,6 +375,18 @@ var postsResolver = {
       });
   }
 };
+
+class NewPost extends Component {
+  handleSubmit(e) {
+    var post = e.data;
+    this.props.posts.create({ post });
+  }
+  render() {
+    return <button onClick={this.handleSubmit}>New Post</button>
+  }
+}
+
+export default quest({ resolver: postsResolver })(NewPost);
 ```
 
 In the above example we execute a second request to the API to fetch the updated resource. If however the response body of the POST request contains the complete updated collection of posts we could resolve the promise with that data instead, saving an extra round trip to the API:
