@@ -128,7 +128,7 @@ var quest = (
     // in componentWillMount resolved sychronously
     // Necesary for server rendering so sync quests can be run in single pass
     connect(state => ({
-      [key]: state._data_[key] || initialState
+      [key]: state._data_[key] || defaultState
     })),
     // add programatic methods
     withProps(props =>
