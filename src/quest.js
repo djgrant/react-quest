@@ -1,3 +1,4 @@
+import invariant from 'invariant';
 import React from 'react';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
@@ -5,9 +6,9 @@ import when from 'recompose/branch';
 import mapProps from 'recompose/mapProps';
 import withProps from 'recompose/withProps';
 import renderNothing from 'recompose/renderNothing';
-import omitProps from './utils/omitProps';
+import { omitProps } from './utils';
 import { startQuest, resolveQuest } from './actions';
-import { initialState } from './reducer';
+import { defaultState } from './reducer';
 
 var never = () => false;
 
@@ -29,20 +30,24 @@ var quest = (
   },
   branch
 ) => {
+  invariant(typeof resolver === 'object', 'quests must be passed a resolver');
+  invariant(typeof resolver.key === 'string', 'resolvers must contain a valid key');
+  invariant(typeof resolver.get === 'function', 'resolvers must contain a get() method');
+
   var key = resolver.key;
 
   return compose(
     // map data already in store to a data prop
     connect(
       state => ({
-        [key]: state._data_[key] || initialState
+        [key]: state._data_[key] || defaultState
       }),
       (dispatch, props) => ({
         updateData: (next, nextProps) => {
           var options = {
-            query: typeof query === 'function'
-              ? query(nextProps || props)
-              : query
+            query: (
+              typeof query === 'function' ? query(nextProps || props) : query
+            )
           };
           if (next === undefined) {
             return dispatch(startQuest(key, resolver.get.bind(null, options)));
@@ -61,16 +66,16 @@ var quest = (
           if (
             // prevent fetching on every prop change
             this.fetched ||
-            // don't refectch if store already hydrated
-            this.props[key].ready
+              // don't refectch if store already hydrated
+              this.props[key].ready
           ) {
             return false;
           }
           if (
             // can fetch immediately
             !fetchOnce ||
-            // if the data failed on the server, try again on client
-            this.props[key].error
+              // if the data failed (on the server), try again (on client)
+              this.props[key].error
           ) {
             return true;
           }
@@ -84,14 +89,17 @@ var quest = (
 
         // dispatch update if data isn't already being fetched into the store
         if (fetchOnServer && this.canFetchOnce()) {
-          promises[key] = this.props.updateData();
-          return promises[key].then(() => {
-            delete promises[key];
-          });
+          var r = this.props.updateData();
+          if (r && r.then) {
+            promises[key] = r.then(() => {
+              delete promises[key];
+            });
+          }
+          return r;
         }
 
-        // if quest is loading but not yet ready return the promise for ssr
-        if (this.props[key].loading) {
+        // if the quest is loading return the promise for ssr
+        if (this.props[key].loading && promises[key]) {
           return promises[key];
         }
       }
@@ -117,7 +125,7 @@ var quest = (
       }
     },
     // connect to the store again in case the dispatch(updateData) call
-    // in componentDidMount resolved sychronously
+    // in componentWillMount resolved sychronously
     // Necesary for server rendering so sync quests can be run in single pass
     connect(state => ({
       [key]: state._data_[key] || initialState
@@ -129,19 +137,21 @@ var quest = (
         method
       ) => ({
         ...accProps,
-        // allow method to be called with some options and a dispatcher
-        // so the resolver can take responsibility for updating the cached data
-        [`${method}${capitalize(key)}`]: query => props.updateData(
-          resolver[method]({
-            ...query,
-            data: props[key].data
-          })
-        )
+        // methods can be called with a query
+        [key]: {
+          ...props[key],
+          [method]: query => props.updateData(
+            resolver[method]({
+              ...query,
+              data: props[key].data
+            })
+          )
+        }
       }), {})),
     // Programatic GET handles update itself
-    withProps(props => ({
-      [`get${capitalize(key)}`]: () => props.updateData()
-    })),
+    // withProps(props => ({
+    //   [`get${capitalize(key)}`]: () => props.updateData()
+    // })),
     // Once there's the data is resolved, we can manipulate the resulting data
     when(
       props => mapData && hasData(props[key]),
@@ -183,9 +193,9 @@ var quest = (
         ...props,
         [key]: {
           ...props[key],
-          data: typeof defaultData === 'function'
-            ? defaultData(props)
-            : defaultData
+          data: (
+            typeof defaultData === 'function' ? defaultData(props) : defaultData
+          )
         }
       })),
       c => c
@@ -200,10 +210,6 @@ function hasData(state) {
 
 function hasError(state) {
   return !!state.error;
-}
-
-function capitalize(string) {
-  return string[0].toUpperCase() + string.slice(1);
 }
 
 quest.sync = opts => quest({ ...opts, mapDirect: true, waitForData: true });

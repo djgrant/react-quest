@@ -1,6 +1,6 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import omitProps, { omit } from './omitProps';
+import { omit, omitProps } from '../src/utils';
 
 describe('HOC: omitProps', function() {
   it('omit: should omit object properties', function() {

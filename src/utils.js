@@ -1,7 +1,7 @@
 import { compose } from 'redux';
 import mapProps from 'recompose/mapProps';
 
-export var omit = (toRemove = []) => obj =>
+export const omit = (toRemove = []) => obj =>
   Object.keys(obj)
     .filter(key => !toRemove.includes(key))
     .reduce((result, key) => ({
@@ -9,6 +9,4 @@ export var omit = (toRemove = []) => obj =>
       [key]: obj[key]
     }), {});
 
-var omitProps = compose(mapProps, omit);
-
-export default omitProps;
+export const omitProps = compose(mapProps, omit);
