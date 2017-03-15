@@ -103,3 +103,10 @@ describe('async actions', function() {
     expect(result).toEqual(undefined);
   });
 });
+
+describe('reducer', function () {
+  it('should add a key to the state', function () {
+    const state = reducer({}, { key: 'items', type: types.fetching });
+    expect(state).toHaveProperty('items');
+  });
+});
