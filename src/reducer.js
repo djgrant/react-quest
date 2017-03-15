@@ -1,19 +1,27 @@
-export var initialState = { loading: false, ready: false, error: null, data: null };
+import { types } from './actions';
+
+export var defaultState = {
+  loading: false,
+  ready: false,
+  reverted: false,
+  error: null,
+  data: null
+};
 
 export default function reducer(state = {}, action) {
-  if (action.type === '@quest/FETCHING_DATA') {
+  if (action.type === types.fetching) {
     return {
       ...state,
       [action.key]: {
+        ...defaultState,
+        ...state[action.key],
         loading: true,
-        ready: false,
-        error: null,
-        data: state[action.key] && state[action.key].data || null
+        ready: false
       }
     };
   }
 
-  if (action.type === '@quest/FETCHED_DATA') {
+  if (action.type === types.fetched) {
     return {
       ...state,
       [action.key]: {
@@ -28,3 +36,7 @@ export default function reducer(state = {}, action) {
 
   return state;
 }
+// 
+// function quest(state = defaultState, action) {
+//
+// }
