@@ -71,15 +71,11 @@ var quest = (
     ),
     Base => class extends React.Component {
       componentWillMount() {
-        this.fetched = false;
+        this.fetched = this.props[key].ready;
 
         this.canFetchOnce = nextProps => {
-          if (
-            // prevent fetching on every prop change
-            this.fetched ||
-              // don't refectch if store already hydrated
-              this.props[key].ready
-          ) {
+          // prevent fetching on every prop change
+          if (this.fetched) {
             return false;
           }
           if (
@@ -151,10 +147,12 @@ var quest = (
             [key]: {
               ...acc[key],
               ...props[key],
-              [methodName]: query => {
+              [methodName]: methodQuery => {
                 const currentData = props[key].data;
                 const method = resolver[methodName];
-                props.updateData(method.bind(null, query, currentData || undefined));
+                props.updateData(
+                  method.bind(null, methodQuery, currentData || undefined)
+                );
               }
             }
           }),
