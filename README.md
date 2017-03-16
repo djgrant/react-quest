@@ -259,7 +259,7 @@ var postsResolver = {
   }
 };
 
-query({
+quest({
   resolver: postsResolver,
   query: {
     language: 'en-GB'
@@ -325,7 +325,7 @@ Now that we know how to pass queries into resolvers and how to access resolver m
 ```js
 var postsResolver = {
   ...
-  create({ post }) {
+  create(post, currentPosts) {
     fetch(POST_API_URL, {
       method: 'POST',
       body: JSON.stringify(post)
@@ -340,7 +340,7 @@ To use this method, in we would just call it from a handler in the component:
 class NewPost extends Component {
   handleSubmit(e) {
     var post = e.data;
-    this.props.posts.create({ post });
+    this.props.posts.create(post);
   }
   render() {
     return <button onClick={this.handleSubmit}>New Post</button>
@@ -359,7 +359,7 @@ To update the local data store, return a promise that resolves with updated coll
 ```js
 var postsResolver = {
   ...
-  create({ post }) {
+  create(post, currentPosts) {
     return fetch(POST_API_URL, {
       method: 'POST',
       body: JSON.stringify(post)
@@ -379,7 +379,7 @@ var postsResolver = {
 class NewPost extends Component {
   handleSubmit(e) {
     var post = e.data;
-    this.props.posts.create({ post });
+    this.props.posts.create(post);
   }
   render() {
     return <button onClick={this.handleSubmit}>New Post</button>
@@ -394,7 +394,7 @@ In the above example we execute a second request to the API to fetch the updated
 ```js
 var postsResolver = {
   ...
-  create({ post }) {
+  create(post) {
     return fetch(POST_API_URL, {
       method: 'POST',
       body: JSON.stringify(post)
@@ -410,7 +410,7 @@ The current local data collection is passed as the second argument to all mutati
 ```js
 var postsResolver = {
   ...
-  create({ post }, currentPosts) {
+  create(post, currentPosts) {
     return fetch(POST_API_URL, {
       method: 'POST',
       body: JSON.stringify(post)
@@ -434,7 +434,7 @@ Let's start with a simple example for this technique:
 ```js
 var numberResolver = {
   ...
-  create({ number }, currentNumber) {
+  create(number, currentNumber) {
     // the first promise will resolve with the data we hope to add
     var optimisticUpdate = Promise.resolve(number);
 
@@ -460,8 +460,8 @@ Returning to our posts example, we can update the local store first with the use
 ```js
 var postsResolver = {
   ...
-  create({ post }, currentPosts) {
-    var newPosts = [...currentPosts, newPost];
+  create(post, currentPosts) {
+    var newPosts = [...currentPosts, post];
     var optimisticUpdate = Promise.resolve(newPosts);
 
     var serverUpdate = fetch(POST_API_URL, {
