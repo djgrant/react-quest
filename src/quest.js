@@ -141,7 +141,6 @@ var quest = (
     connect(state => ({
       [key]: state._data_[key] || defaultState
     })),
-    omitProps(['updateData', 'dispatch']),
     // add programatic methods
     withProps(props =>
       Object.keys(resolver)
@@ -150,16 +149,18 @@ var quest = (
           (acc, methodName) => ({
             ...acc,
             [key]: {
+              ...acc[key],
               ...props[key],
               [methodName]: query => {
                 const currentData = props[key].data;
                 const method = resolver[methodName];
-                props.updateData(method(query, currentData));
+                props.updateData(method.bind(null, query, currentData || undefined));
               }
             }
           }),
           {}
         )),
+    omitProps(['updateData', 'dispatch']),
     when(
       props => mapData && hasData(props[key]),
       mapProps(props => ({

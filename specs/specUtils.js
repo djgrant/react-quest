@@ -5,7 +5,7 @@ import {
   combineReducers,
   applyMiddleware
 } from 'redux';
-import { mount } from 'enzyme';
+import { mount  as _mount } from 'enzyme';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import { reducer as questReducer } from '../src';
@@ -18,12 +18,21 @@ export const createStore = () => _createStore(
 );
 
 export const withStore = store => App => () => (
-  <Provider store={store}>
+  <Provider store={store || createStore()}>
     <App />
   </Provider>
 );
 
-export const getHocProps = (hoc, store) => {
+export const mount = node => new Promise(resolve => {
+  const mounted = _mount(node);
+  setTimeout(() => resolve(mounted), 0);
+});
+
+export const delay = (interval = 0) => new Promise(resolve => {
+  setTimeout(() => resolve(), interval);
+});
+
+export const getHocProps = async (hoc, store) => {
   let result;
   const HocWithPropsCatcher = compose(
     withStore(store || createStore()),
@@ -32,8 +41,8 @@ export const getHocProps = (hoc, store) => {
     result = props;
     return null;
   });
-  mount(<HocWithPropsCatcher />);
-  return new Promise(resolve => setTimeout(() => resolve(result), 0));
+  await mount(<HocWithPropsCatcher />);
+  return result;
 };
 
 export const Items = props => {
