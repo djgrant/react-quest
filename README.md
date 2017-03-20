@@ -319,7 +319,7 @@ Posts.propTypes = {
 This may not be particularly useful for resolvers that only contain a `get()` method, but it will come in handy when we start adding mutation methods to the resolver.
 
 
-### Adding mutative methods to resolvers
+### Adding mutation methods to resolvers
 Now that we know how to pass queries into resolvers and how to access resolver methods programmatically, we can add some mutative methods to our `postsResolver`. Let's add a method that creates new entries.
 
 ```js
