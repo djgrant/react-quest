@@ -150,7 +150,7 @@ var quest = (
               [methodName]: methodQuery => {
                 const currentData = props[key].data;
                 const method = resolver[methodName];
-                props.updateData(
+                return props.updateData(
                   method.bind(null, methodQuery, currentData || undefined)
                 );
               }
