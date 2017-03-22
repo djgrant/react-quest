@@ -30,6 +30,20 @@ describe('quest: resolving data', function() {
     expect(actual).toEqual(expected);
   });
 
+  it('passes a query to the resolver', async function() {
+    const getter = jest.fn();
+    const hoc = quest({
+      resolver: {
+        key: 'test',
+        get: getter
+      },
+      query: 'test query'
+    });
+
+    await getHocProps(hoc);
+    expect(getter.mock.calls[0]).toEqual(['test query']);
+  });
+
   it('should resolve mutation methods', async function() {
     let hocProps;
     const Button = compose(

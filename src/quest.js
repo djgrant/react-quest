@@ -55,13 +55,12 @@ var quest = (
       }),
       (dispatch, props) => ({
         updateData: (next, nextProps) => {
-          var options = {
-            query: (
-              typeof query === 'function' ? query(nextProps || props) : query
-            )
-          };
+          var _query = typeof query === 'function'
+            ? query(nextProps || props)
+            : query;
+            
           if (next === undefined) {
-            return dispatch(startQuest(key, resolver.get.bind(null, options)));
+            return dispatch(startQuest(key, resolver.get.bind(null, _query)));
           } else if (typeof next === 'function') {
             return dispatch(startQuest(key, next));
           }
@@ -81,8 +80,8 @@ var quest = (
           if (
             // can fetch immediately
             !fetchOnce ||
-              // if the data failed (on the server), try again (on client)
-              this.props[key].error
+            // if the data failed (on the server), try again (on client)
+            this.props[key].error
           ) {
             return true;
           }
@@ -195,9 +194,9 @@ var quest = (
         ...props,
         [key]: {
           ...props[key],
-          data: (
-            typeof defaultData === 'function' ? defaultData(props) : defaultData
-          )
+          data: typeof defaultData === 'function'
+            ? defaultData(props)
+            : defaultData
         }
       }))
     ),
