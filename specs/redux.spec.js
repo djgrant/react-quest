@@ -46,7 +46,9 @@ describe('async actions', function() {
   const mockDispatch = jest.fn();
   const mockGetState = () => ({
     _data_: {
-      items: [1, 2, 3]
+      items: {
+        data: [1, 2, 3]
+      }
     }
   });
 
