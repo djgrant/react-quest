@@ -41,12 +41,12 @@ A lightweight (2kb gzip) yet impressively featured library for colocating compon
 - [Setup](#setup)
 - [Server side resolution](#server-side-resolution)
 - [Creating resolvers](#creating-resolvers)
+- [Calling resolver methods programmatically](#calling-resolver-methods-programmatically)
 - [Deferring fetching to browser](#deferring-fetching-to-browser)
 - [Fetching data on prop changes](#fetching-data-on-prop-changes)
 - [Transforming resolved data](#transforming-resolved-data)
 - [Mapping data to props](#mapping-data-to-props)
 - [Passing a query to the resolver](#passing-a-query-to-the-resolver)
-- [Programmatically running resolver methods](#programmatically-running-resolver-methods)
 - [Adding mutation methods to resolvers](#adding-mutation-methods-to-resolvers)
 - [Updating remote data](#updating-remote-data)
 - [Performing optimistic updates](#performing-optimistic-updates)
@@ -106,7 +106,7 @@ In this example the resolved data will be keyed against a `posts` field in the r
 }
 ```
 
-To use the resolver provide it as an option in a quest:
+To use the resolver, provide it as an option in a quest:
 
 ```js
 const withPosts = quest({
@@ -134,15 +134,54 @@ Items.propTypes = {
     error: PropType.string,
     loading: PropType.boolean,
     complete: PropType.boolean,
-    get: PropType.function // You probably won't need to use this
+    get: PropType.function
   })
 };
 ```
 
 > A resolver can be re-used in multiple quests without causing additional fetching or duplication in the store.
 
+### Calling resolver methods programmatically
+
+You can add as many methods to a resolver as you would like. The default `get()` method is called as part of the quest's lifecyle. Additional methods can be called directly via props.
+
+Every method in a resolver is added to the quest object for direct access. Take the following example:
+
+```js
+var postsResolver = {
+  key: 'posts',
+  get() {
+    return fetch(POST_API_URL).then(r => r.json())
+  },
+  create() {
+    // perform a mutation
+  }
+};
+
+quest({
+  resolver: postsResolver
+})(Posts)
+```
+
+Both the get and create methods are added to the quest object's properties:
+
+```js
+Posts.propTypes = {
+  posts: PropType.shape({
+    get: PropType.function,  // <--
+    create: PropType.function, // <--
+    data: PropType.any,
+    error: PropType.string,
+    loading: PropType.boolean,
+    complete: PropType.boolean
+  })
+};
+```
+
+It's unlikely that you'll need direct access to the `get()` method, however, it is useful be able to call mutation methods programmatically. The `create()` method, for example, could be called on a user event (see [Passing a query to the resolver](#passing-a-query-to-the-resolver)).
+
 ### Deferring fetching to the browser
-By default quests will attempt to resolve their data requirements whenever they are mounted, including on server render passes. To defer loading until the component set `fetchOnServer: false` in the options block:
+By default quests will attempt to resolve their data requirements whenever they are instantiated, including on server render passes. To defer loading until the component is mounted set `fetchOnServer: false` in the options block:
 
 ```js
 quest({
@@ -206,7 +245,7 @@ export default withPostTitles(PostList);
 
 ### Mapping data to props
 
-You can map data directly to a component's props object. This is handy if you find yourself wanting to apply multiple selectors to the same dataset.
+You can map data directly to a component's props. This is handy if you find yourself wanting to apply multiple selectors to the same dataset.
 
 `mapToProps` takes a prop mapping function that maps the resolved dataset to a props object. The created props object is then spread into the components own props.
 
@@ -255,14 +294,14 @@ Resolver methods can be configured by creating a `query` object in a quest. The 
 var postsResolver = {
   key: 'posts',
   get(query) {
-    return fetch(`${POST_API_URL}?lang=${query.language}`).then(r => r.json())
+    return fetch(`${POST_API_URL}?filter=${query.filter}`).then(r => r.json())
   }
 };
 
 quest({
   resolver: postsResolver,
   query: {
-    language: 'en-GB'
+    filter: myStaticFilter
   }
 });
 ```
@@ -272,51 +311,27 @@ Queries can be paired nicely with react-redux's `connect` HOC:
 ```js
 compose(
   connect(state => ({
-    language: getSiteLanguage(state)
+    filter: getPostsFilter(state)
   })),
   quest({
     resolver: postsResolver,
     query: props => ({
-      language: props.language
+      filter: props.filter
     })
   })
 );
 ```
 
-### Programmatically running resolver methods
-
-In the examples so far the resolver's `get()` method has been called during lifecycle of a component or on changes to its props. But it is also possible to call a resolver's methods directly.
-
-Every method in a resolver is added to the quest object for direct access.
+Queries can also be passed to resolver methods when they are called programmatically.
 
 ```js
-var postsResolver = {
-  key: 'posts',
-  get() {
-    return fetch(POST_API_URL).then(r => r.json())
-  },
-  set() {
-    // perform a mutation
+class extends Component {
+  handleClick(event) {
+    var query = { title: event.target.value };
+    this.props.posts.create(query);
   }
-};
-
-quest({
-  resolver: postsResolver
-})(Posts)
-
-Posts.propTypes = {
-  posts: PropType.shape({
-    get: PropType.function, // <-- Resolver methods are added to the quest object
-    set: PropType.function, // <--
-    data: PropType.any,
-    error: PropType.string,
-    loading: PropType.boolean,
-    complete: PropType.boolean
-  })
-};
+}
 ```
-
-This may not be particularly useful for resolvers that only contain a `get()` method, but it will come in handy when we start adding mutation methods to the resolver.
 
 
 ### Adding mutation methods to resolvers
@@ -334,7 +349,7 @@ var postsResolver = {
 };
 ```
 
-To use this method, in we would just call it from a handler in the component:
+To use this method, in we would call it from a handler in the component:
 
 ```js
 class NewPost extends Component {
