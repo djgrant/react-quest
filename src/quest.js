@@ -15,12 +15,14 @@ import { startQuest, resolveQuest } from './actions';
 import { defaultState } from './reducer';
 
 var never = () => false;
+var identity = i => i;
 
 var promises = {};
 
 var quest = (
   {
     query = null,
+    mapQuery = identity,
     resolver,
     mapData,
     mapToProps,
@@ -55,12 +57,16 @@ var quest = (
       }),
       (dispatch, props) => ({
         updateData: (next, nextProps) => {
-          var _query = typeof query === 'function'
+          let defaultQuery = typeof query === 'function'
             ? query(nextProps || props)
             : query;
-            
+
+          defaultQuery = mapQuery(defaultQuery, nextProps || props);
+
           if (next === undefined) {
-            return dispatch(startQuest(key, resolver.get.bind(null, _query)));
+            return dispatch(
+              startQuest(key, resolver.get.bind(null, defaultQuery))
+            );
           } else if (typeof next === 'function') {
             return dispatch(startQuest(key, next));
           }
@@ -147,6 +153,7 @@ var quest = (
               ...acc[key],
               ...props[key],
               [methodName]: methodQuery => {
+                methodQuery = mapQuery(methodQuery, props);
                 const currentData = props[key].data;
                 const method = resolver[methodName];
                 return props.updateData(
