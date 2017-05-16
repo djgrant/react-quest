@@ -1,13 +1,13 @@
-# redux-quest
+# react-quest
 
-Declarative data fetching for universal Redux apps.
+Declarative data fetching for universal React/Redux apps.
 
-[![npm](https://img.shields.io/npm/v/redux-quest.svg?style=flat-square)](http://npm.im/redux-quest)
+[![npm](https://img.shields.io/npm/v/react-quest.svg?style=flat-square)](http://npm.im/react-quest)
 [![MIT License](https://img.shields.io/npm/l/react-jobs.svg?style=flat-square)](http://opensource.org/licenses/MIT)
-[![Travis](https://img.shields.io/travis/djgrant/redux-quest.svg?style=flat-square)](https://travis-ci.org/ctrlplusb/redux-quest)
+[![Travis](https://img.shields.io/travis/djgrant/react-quest.svg?style=flat-square)](https://travis-ci.org/ctrlplusb/react-quest)
 
 ```js
-import quest from 'redux-quest';
+import quest from 'react-quest';
 
 const postsResolver = {
   key: 'posts',
@@ -38,6 +38,7 @@ A lightweight (2kb gzip) yet impressively featured library for colocating compon
 
 ## Documentation
 
+- [Prerequisites](#prerequisites)
 - [Setup](#setup)
 - [Server side resolution](#server-side-resolution)
 - [Creating resolvers](#creating-resolvers)
@@ -52,16 +53,24 @@ A lightweight (2kb gzip) yet impressively featured library for colocating compon
 - [Performing optimistic updates](#performing-optimistic-updates)
 - [Complete API reference](#complete-api-reference)
 
+### Prerequisites
+
+react-quest leverages Redux to manage state and caching. Before proceeding with setup make sure you have the following packages installed:
+
+- [react](https://facebook.github.io/react/)
+- [redux](http://redux.js.org/#installation)
+- [redux-thunk](https://github.com/gaearon/redux-thunk#installation)
+
 ### Setup
 
 ```bash
-npm install redux-quest --save
+npm install react-quest --save
 ```
 
-Then add the redux-quest reducer to your root reducer:
+Then add the react-quest reducer to your root reducer:
 
 ```js
-import { reducer as questReducer } from 'redux-quest';
+import { reducer as questReducer } from 'react-quest';
 
 var reducer = combineReducers({
   _data_: questReducer
@@ -74,7 +83,7 @@ For server rendered apps you must wait for quests to be resolved before sending 
 
 There is a lot of work within the community on SSR solutions that render render component trees asynchronously and until the release of react fiber a standard approach is unlikely to emerge. Until such a time SSR is not formally supported.
 
-In the meantime you can try [redux-ready](https://github.com/djgrant/redux-ready) which is a simple solution that works well with tree that don't have nested quests, or [react-warmup](https://github.com/djgrant/react-warmup) which enables redux-quest to perform a cache warmup.
+In the meantime you can try [redux-ready](https://github.com/djgrant/redux-ready) which is a simple solution that works well with tree that don't have nested quests, or [react-warmup](https://github.com/djgrant/react-warmup) which enables react-quest to perform a cache warmup.
 
 ### Creating resolvers
 
@@ -212,7 +221,7 @@ quest({
 
 ### Transforming resolved data
 
-A common requirement when working with remote data sources is to be able to transform the dataset set once it has been resolved. Developers are encouraged to write functions (known as selectors in Redux land) that transform the resolved data into a new dataset. You can pass a selector function to the `mapData` option and redux-quest will take care of mapping the data once it arrives.
+A common requirement when working with remote data sources is to be able to transform the dataset set once it has been resolved. Developers are encouraged to write functions (known as selectors in Redux land) that transform the resolved data into a new dataset. You can pass a selector function to the `mapData` option and react-quest will take care of mapping the data once it arrives.
 
 ```js
 const withPostTitles = quest({
@@ -509,7 +518,7 @@ Todo
 
 ## Credits
 
-redux-quest was inspired by a few projects in particular:
+react-quest was inspired by a few projects in particular:
 - [Relay](https://facebook.github.io/relay/), which introduced the idea of colocating data queries and components
 - [Apollo](http://dev.apollodata.com/), whose React client proved the versatility of redux as a local cache
 - [react-jobs](https://github.com/ctrlplusb/react-jobs), which influenced the design of the quest higher order components
