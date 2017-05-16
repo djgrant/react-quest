@@ -53,7 +53,8 @@ A lightweight (2kb gzip) yet impressively featured library for colocating compon
 - [Performing optimistic updates](#performing-optimistic-updates)
 - [Complete API reference](#complete-api-reference)
 
-### Prerequisites
+
+### Prerequisites
 
 react-quest leverages Redux to manage state and caching. Before proceeding with setup make sure you have the following packages installed:
 
