@@ -15,7 +15,7 @@ export function startQuest(key, resolverMethod) {
         dispatch(resolveQuest(key, data));
         return data;
       })
-      .catch(error => {
+      .catch(() => {
         dispatch(revertQuest(key, originalData));
         return originalData;
       }));
