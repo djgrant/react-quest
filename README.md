@@ -80,9 +80,7 @@ var reducer = combineReducers({
 
 ### Server side resolution
 
-> WIP
-
-To render an app complete with data on the server, quests must first be resolved before rendering components (with their data requirements fulfilled). This means we need to reach beyond synchronous rendering solutions, like `ReactDOMServer.renderToString()`, and to a renderer that can render progressively. Custom renderers are super hot right now and excellent renderers like rapscallion are [https://github.com/FormidableLabs/rapscallion/issues/51#issuecomment-287202896](shaping up to solve this problem). 
+To server render an app that is complete with data, quests must first be resolved before their components are rendered. This means we need to reach beyond synchronous rendering solutions, like `ReactDOMServer.renderToString()`, and to a renderer that can render the tree progressively. Custom renderers are super hot right now and excellent renderers like rapscallion are [https://github.com/FormidableLabs/rapscallion/issues/51#issuecomment-287202896](shaping up to solve this problem). 
 
 While the React community figures out progessive rendering you can try [redux-ready](https://github.com/djgrant/redux-ready), a simple solution that works well with simple trees that don't have nested quests, or [react-warmup](https://github.com/djgrant/react-warmup) which performs a cache warmup.
 
