@@ -73,7 +73,7 @@ Then add the react-quest reducer to your root reducer:
 ```js
 import { reducer as questReducer } from 'react-quest';
 
-var reducer = combineReducers({
+const reducer = combineReducers({
   _data_: questReducer
 });
 ```
@@ -91,7 +91,7 @@ Every quest must have a resolver. The resolver's job is to return some data or a
 Every resolver must include a `key` and a `get()` method.
 
 ```js
-var postsResolver = {
+const postsResolver = {
   key: 'posts',
   get() {
     return fetch(POST_API_URL).then(r => r.json())
@@ -156,7 +156,7 @@ You can add as many methods to a resolver as you would like. The default `get()`
 Every method in a resolver is added to the quest object for direct access. Take the following example:
 
 ```js
-var postsResolver = {
+const postsResolver = {
   key: 'posts',
   get() {
     return fetch(POST_API_URL).then(r => r.json())
@@ -258,7 +258,7 @@ You can map data directly to a component's props. This is handy if you find your
 `mapToProps` takes a prop mapping function that maps the resolved dataset to a props object. The created props object is then spread into the components own props.
 
 ```js
-var withNewPosts = quest({
+const withNewPosts = quest({
   resolver: postsResolver,
   mapToProps: posts => ({
     newPosts: posts.filter(post => post.isNew),
@@ -299,7 +299,7 @@ export default withNewPosts(Items);
 Resolver methods can be configured by creating a `query` object in a quest. The `query` option takes either a prop mapping function or a plain object:
 
 ```js
-var postsResolver = {
+const postsResolver = {
   key: 'posts',
   get(query) {
     return fetch(`${POST_API_URL}?filter=${query.filter}`).then(r => r.json())
@@ -335,7 +335,7 @@ Queries can also be passed to resolver methods when they are called programmatic
 ```js
 class extends Component {
   handleClick(event) {
-    var query = { title: event.target.value };
+    const query = { title: event.target.value };
     this.props.posts.create(query);
   }
 }
@@ -346,7 +346,7 @@ class extends Component {
 Now that we know how to pass queries into resolvers and how to access resolver methods programmatically, we can add some mutative methods to our `postsResolver`. Let's add a method that creates new entries.
 
 ```js
-var postsResolver = {
+const postsResolver = {
   ...
   create(post, currentPosts) {
     fetch(POST_API_URL, {
@@ -362,7 +362,7 @@ To use this method, in we would call it from a handler in the component:
 ```js
 class NewPost extends Component {
   handleSubmit(e) {
-    var post = e.data;
+    const post = e.data;
     this.props.posts.create(post);
   }
   render() {
@@ -380,7 +380,7 @@ Calling the create method in the previous example creates a new post on the serv
 To update the local data store, return a promise that resolves with updated collection from the resolver's mutation method:
 
 ```js
-var postsResolver = {
+const postsResolver = {
   ...
   create(post, currentPosts) {
     return fetch(POST_API_URL, {
@@ -401,7 +401,7 @@ var postsResolver = {
 
 class NewPost extends Component {
   handleSubmit(e) {
-    var post = e.data;
+    const post = e.data;
     this.props.posts.create(post);
   }
   render() {
@@ -415,7 +415,7 @@ export default quest({ resolver: postsResolver })(NewPost);
 In the above example we execute a second request to the API to fetch the updated resource. If however the response body of the POST request contains the complete updated collection of posts we could resolve the promise with that data instead, saving an extra round trip to the API:
 
 ```js
-var postsResolver = {
+const postsResolver = {
   ...
   create(post) {
     return fetch(POST_API_URL, {
@@ -431,7 +431,7 @@ There are times when in order to form a complete update you'll need access to th
 The current local data collection is passed as the second argument to all mutation methods:
 
 ```js
-var postsResolver = {
+const postsResolver = {
   ...
   create(post, currentPosts) {
     return fetch(POST_API_URL, {
@@ -455,14 +455,14 @@ As a fail safe mechanism, if a promise rejects, any updates from promises that w
 Let's start with a simple example for this technique:
 
 ```js
-var numberResolver = {
+const numberResolver = {
   ...
   create(number, currentNumber) {
     // the first promise will resolve with the data we hope to add
-    var optimisticUpdate = Promise.resolve(number);
+    const optimisticUpdate = Promise.resolve(number);
 
     // the second promise will resolve with the actual result
-    var serverUpdate = new Promise(resolve => {
+    const serverUpdate = new Promise(resolve => {
       // mock an IO operation
       setTimeout(() => {
         resolve(2);
@@ -481,13 +481,13 @@ In this example the local store is first updated with `number` and then 100ms la
 Returning to our posts example, we can update the local store first with the user input using a promise that immediately resolves (the optimistic update), and then with the real result from the server. To add just a little extra complexity to the example, let's also handle cases where the server update fails. In such an event, we'd need to revert the effect of the optimistic update and resolve the server update with the original posts collection.
 
 ```js
-var postsResolver = {
+const postsResolver = {
   ...
   create(post, currentPosts) {
-    var newPosts = [...currentPosts, post];
-    var optimisticUpdate = Promise.resolve(newPosts);
+    const newPosts = [...currentPosts, post];
+    const optimisticUpdate = Promise.resolve(newPosts);
 
-    var serverUpdate = fetch(POST_API_URL, {
+    const serverUpdate = fetch(POST_API_URL, {
       method: 'POST',
       body: JSON.stringify(post)
     })
