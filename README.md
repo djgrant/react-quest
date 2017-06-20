@@ -22,8 +22,8 @@ const withPosts = quest({
 
 const Items = ({ posts }) => (
   <div>
-    {posts.result
-      ? posts.result.map(post => <Item entry={post} />)
+    {posts.data
+      ? posts.data.map(post => <Item entry={post} />)
       : <Loading />
     }
   </div>
@@ -123,8 +123,8 @@ const withPosts = quest({
 
 const Items = ({ posts }) => (
   <div>
-    {posts.result
-      ? posts.result.map(post => <Item entry={post} />)
+    {posts.data
+      ? posts.data.map(post => <Item entry={post} />)
       : <Loading />
     }
   </div>
@@ -234,10 +234,10 @@ const withPostTitles = quest({
 
 const PostList = ({ posts }) => (
   <div>
-    {posts.result
+    {posts.data
       ? (
         <ul>
-          {posts.result.map(post =>
+          {posts.data.map(post =>
             <li id={post.id} key={post.id}>{post.title}</li>
           )}
         </ul>
@@ -268,7 +268,7 @@ const withNewPosts = quest({
 
 const Items = ({ posts, newPosts }) => (
   {posts.completed &&
-    <div>{newPosts.result.map(post => <Item entry={post} />)}</div>}
+    <div>{newPosts.data.map(post => <Item entry={post} />)}</div>}
 );
 
 export default withNewPosts(Items);
@@ -285,7 +285,7 @@ const withPosts = quest({
 });
 
 const Items = ({ posts }) => (
-  <div>{posts.result.map(post => <Item entry={post} />)}</div>
+  <div>{posts.data.map(post => <Item entry={post} />)}</div>
 );
 
 export default withNewPosts(Items);
@@ -461,7 +461,7 @@ const numberResolver = {
     // the first promise will resolve with the data we hope to add
     const optimisticUpdate = Promise.resolve(number);
 
-    // the second promise will resolve with the actual result
+    // the second promise will resolve with the actual data
     const serverUpdate = new Promise(resolve => {
       // mock an IO operation
       setTimeout(() => {
@@ -478,7 +478,7 @@ const numberResolver = {
 
 In this example the local store is first updated with `number` and then 100ms later it is updated with `2`.
 
-Returning to our posts example, we can update the local store first with the user input using a promise that immediately resolves (the optimistic update), and then with the real result from the server. To add just a little extra complexity to the example, let's also handle cases where the server update fails. In such an event, we'd need to revert the effect of the optimistic update and resolve the server update with the original posts collection.
+Returning to our posts example, we can update the local store first with the user input using a promise that immediately resolves (the optimistic update), and then with the real data from the server. To add just a little extra complexity to the example, let's also handle cases where the server update fails. In such an event, we'd need to revert the effect of the optimistic update and resolve the server update with the original posts collection.
 
 ```js
 const postsResolver = {
