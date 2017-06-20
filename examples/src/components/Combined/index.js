@@ -1,1 +1,1 @@
-export { default } from 'Combined';
+export { default } from './Combined';

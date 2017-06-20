@@ -2,29 +2,33 @@ import React from 'react';
 import quest from 'react-quest';
 import { compose } from 'redux';
 
+const aResolver = {
+  key: 'a',
+  get: () =>
+    Promise.resolve({
+      id: 1,
+      description: 'some resource',
+      related: [3, 9, 18]
+    })
+};
+
+const bResolver = {
+  key: 'b',
+  get: query =>
+    Promise.resolve(
+      query.ids.map(id => ({
+        id,
+        title: `Post ${id}`
+      }))
+    )
+};
+
 const enhance = compose(
   quest({
-    resolver: {
-      key: 'a',
-      get: () =>
-        Promise.resolve({
-          id: 1,
-          description: 'some resource',
-          related: [1, 2, 3]
-        })
-    }
+    resolver: aResolver
   }),
   quest({
-    resolver: {
-      key: 'b',
-      get: query =>
-        Promise.resolve(
-          query.ids.map(id => ({
-            id,
-            title: `Post ${id}`
-          }))
-        )
-    },
+    resolver: bResolver,
     fetchOnce: props => props.a.data && props.a.data.related,
     query: props => ({
       ids: props.a.data.related

@@ -1,16 +1,18 @@
 import React from 'react';
 import quest from 'react-quest';
 
+const postsResolver = {
+  key: 'posts',
+  get: () =>
+    Promise.resolve([
+      { id: 1, title: 'Post 1' },
+      { id: 2, title: 'Post 2' },
+      { id: 3, title: 'Post 3' }
+    ])
+};
+
 const enhance = quest({
-  resolver: {
-    key: 'posts',
-    get: () =>
-      Promise.resolve([
-        { id: 1, title: 'Post 1' },
-        { id: 2, title: 'Post 2' },
-        { id: 3, title: 'Post 3' }
-      ])
-  }
+  resolver: postsResolver
 });
 
 const Posts = ({ posts, loadMore }) => (
