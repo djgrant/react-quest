@@ -3,8 +3,8 @@
 Declarative data fetching for universal React/Redux apps.
 
 [![npm](https://img.shields.io/npm/v/react-quest.svg?style=flat-square)](http://npm.im/react-quest)
-[![MIT License](https://img.shields.io/npm/l/react-jobs.svg?style=flat-square)](http://opensource.org/licenses/MIT)
-[![Travis](https://img.shields.io/travis/djgrant/react-quest.svg?style=flat-square)](https://travis-ci.org/ctrlplusb/react-quest)
+[![MIT License](https://img.shields.io/npm/l/react-quest.svg?style=flat-square)](http://opensource.org/licenses/MIT)
+[![Travis](https://img.shields.io/travis/djgrant/react-quest.svg?style=flat-square)](https://travis-ci.org/djgrant/react-quest)
 
 ```js
 import quest from 'react-quest';
@@ -34,7 +34,7 @@ export default withPosts(Items);
 
 ## Introduction
 
-A lightweight (2kb gzip) yet impressively featured library for colocating components and their data requirements, handling simple data resolving functions, mutating remote data, performing optimistic updates, reloading data on prop changes or programmatically, and much more!
+A lightweight (2kb gzip) yet impressively featured library for colocating components and their data requirements. Capable of mutating remote data, performing optimistic updates, reloading data on prop changes or programmatically, and much more!
 
 ## Documentation
 
