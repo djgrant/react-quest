@@ -2,43 +2,45 @@ import React from 'react';
 import quest from 'react-quest';
 import { compose } from 'redux';
 
-const aResolver = {
-  key: 'a',
+const relatedResolver = {
+  key: 'related',
   get: () =>
     Promise.resolve({
       id: 1,
-      description: 'some resource',
-      related: [3, 9, 18]
+      description: 'Some other resource',
+      relatedArticles: [3, 9, 18]
     })
 };
 
-const bResolver = {
-  key: 'b',
-  get: query =>
+const articlesResolver = {
+  key: 'articles',
+  get: (query, currentPosts) =>
     Promise.resolve(
       query.ids.map(id => ({
         id,
-        title: `Post ${id}`
+        title: `Article ${id}`
       }))
     )
 };
 
 const enhance = compose(
   quest({
-    resolver: aResolver
+    resolver: relatedResolver
   }),
   quest({
-    resolver: bResolver,
-    fetchOnce: props => props.a.data && props.a.data.related,
+    resolver: articlesResolver,
+    fetchOnce: props =>
+      props.related.data && props.related.data.relatedArticles,
     query: props => ({
-      ids: props.a.data.related
+      ids: props.related.data.relatedArticles
     })
   })
 );
 
-const Combined = ({ a, b }) => (
+const Combined = ({ related, articles }) => (
   <div>
-    {b.data && b.data.map(post => <h3 key={post.id}>{post.title}</h3>)}
+    {articles.data &&
+      articles.data.map(post => <h3 key={post.id}>{post.title}</h3>)}
   </div>
 );
 
