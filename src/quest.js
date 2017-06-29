@@ -74,68 +74,70 @@ var quest = (
         }
       })
     ),
-    Base => class extends React.Component {
-      componentWillMount() {
-        this.fetched = this.props[key].ready;
+    Base =>
+      class extends React.Component {
+        componentWillMount() {
+          this.fetched = this.props[key].ready;
 
-        this.canFetchOnce = nextProps => {
-          // prevent fetching on every prop change
-          if (this.fetched) {
-            return false;
+          this.canFetchOnce = nextProps => {
+            // prevent fetching on every prop change
+            if (this.fetched) {
+              return false;
+            }
+            if (
+              // can fetch immediately
+              !fetchOnce ||
+              // if the data failed (on the server), try again (on client)
+              this.props[key].error
+            ) {
+              return true;
+            }
+            if (typeof fetchOnce !== 'function') {
+              return !!fetchOnce;
+            }
+            if (fetchOnce(nextProps || this.props)) {
+              return true;
+            }
+          };
+
+          // dispatch update if data isn't already being fetched into the store
+          if (fetchOnServer && this.canFetchOnce()) {
+            var r = this.props.updateData();
+            if (r && r.then) {
+              promises[key] = r.then(() => {
+                delete promises[key];
+              });
+            }
+            return r;
           }
+
+          // if the quest is loading return the promise for ssr
+          if (this.props[key].loading && promises[key]) {
+            return promises[key];
+          }
+        }
+
+        componentDidMount() {
+          if (!fetchOnServer && this.canFetchOnce()) {
+            this.fetched = true;
+            this.props.updateData();
+          }
+        }
+
+        componentWillReceiveProps(nextProps) {
           if (
-            // can fetch immediately
-            !fetchOnce ||
-            // if the data failed (on the server), try again (on client)
-            this.props[key].error
+            this.canFetchOnce(nextProps) ||
+            refetchWhen(this.props, nextProps)
           ) {
-            return true;
+            this.fetched = true;
+            this.props.updateData(undefined, nextProps);
           }
-          if (typeof fetchOnce !== 'function') {
-            return !!fetchOnce;
-          }
-          if (fetchOnce(nextProps || this.props)) {
-            return true;
-          }
-        };
-
-        // dispatch update if data isn't already being fetched into the store
-        if (fetchOnServer && this.canFetchOnce()) {
-          var r = this.props.updateData();
-          if (r && r.then) {
-            promises[key] = r.then(() => {
-              delete promises[key];
-            });
-          }
-          return r;
         }
 
-        // if the quest is loading return the promise for ssr
-        if (this.props[key].loading && promises[key]) {
-          return promises[key];
+        render() {
+          return <Base {...this.props} />;
         }
-      }
-
-      componentDidMount() {
-        if (!fetchOnServer && this.canFetchOnce()) {
-          this.fetched = true;
-          this.props.updateData();
-        }
-      }
-
-      componentWillReceiveProps(nextProps) {
-        if (
-          this.canFetchOnce(nextProps) || refetchWhen(this.props, nextProps)
-        ) {
-          this.fetched = true;
-          this.props.updateData(undefined, nextProps);
-        }
-      }
-
-      render() {
-        return <Base {...this.props} />;
-      }
-    },
+      },
     // connect to the store again in case the dispatch(updateData) call
     // in componentWillMount resolved sychronously
     // Necesary for server rendering so sync quests can be run in single pass
@@ -163,7 +165,8 @@ var quest = (
             }
           }),
           {}
-        )),
+        )
+    ),
     omitProps(['updateData', 'dispatch']),
     when(
       props => mapData && hasData(props[key]),

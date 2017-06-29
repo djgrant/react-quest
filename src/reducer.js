@@ -36,7 +36,7 @@ export default function reducer(state = {}, action) {
 
   return state;
 }
-// 
+//
 // function quest(state = defaultState, action) {
 //
 // }

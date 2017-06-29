@@ -53,7 +53,7 @@ describe('quest: setup', function() {
   it('registers the resolver key as a state field', function() {
     const itemsResolver = {
       key: 'items',
-      get: () => [1,2,3]
+      get: () => [1, 2, 3]
     };
 
     const ItemsWithData = compose(

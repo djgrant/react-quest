@@ -52,7 +52,7 @@ describe('async actions', function() {
     }
   });
 
-  afterEach(function () {
+  afterEach(function() {
     mockDispatch.mockReset();
   });
 
@@ -69,7 +69,7 @@ describe('async actions', function() {
     expect(mockDispatch).toBeCalledWith({
       type: types.fetched,
       key: 'items',
-      data: [1,2,3,4]
+      data: [1, 2, 3, 4]
     });
 
     expect(result).toEqual([1, 2, 3, 4]);
@@ -87,18 +87,15 @@ describe('async actions', function() {
     expect(result).toEqual([1, 2, 3, 4, 5]);
   });
 
-  it('should revert the data if a promise rejects', async function () {
-    const getter = () => [
-      Promise.resolve([1, 2, 3, 4]),
-      Promise.reject()
-    ];
+  it('should revert the data if a promise rejects', async function() {
+    const getter = () => [Promise.resolve([1, 2, 3, 4]), Promise.reject()];
     const thunk = startQuest('items', getter);
     const result = await thunk(mockDispatch, mockGetState).catch(err => {});
 
     expect(mockDispatch).toBeCalledWith({
       type: types.fetched,
       key: 'items',
-      data: [1,2,3],
+      data: [1, 2, 3],
       reverted: true
     });
 
@@ -106,8 +103,8 @@ describe('async actions', function() {
   });
 });
 
-describe('reducer', function () {
-  it('should add a key to the state', function () {
+describe('reducer', function() {
+  it('should add a key to the state', function() {
     const state = reducer({}, { key: 'items', type: types.fetching });
     expect(state).toHaveProperty('items');
   });

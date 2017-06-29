@@ -21,7 +21,7 @@ describe('quest: mapping data', function() {
 
     const props = await getHocProps(hoc);
     const actual = props.items.data;
-    const expected = objectContaining({ firstItem: 1 })
+    const expected = objectContaining({ firstItem: 1 });
 
     expect(actual).toEqual(expected);
   });
@@ -41,11 +41,10 @@ describe('quest: mapping data', function() {
     );
 
     const actual = await getHocProps(hoc);
-    const expected = objectContaining({ firstItem: 1, test: 1 })
+    const expected = objectContaining({ firstItem: 1, test: 1 });
 
     expect(actual).toEqual(expected);
   });
 
-  it.skip('mapToProps maps resolver methods to props', function() {
-  });
+  it.skip('mapToProps maps resolver methods to props', function() {});
 });

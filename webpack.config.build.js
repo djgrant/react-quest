@@ -1,12 +1,12 @@
-var path = require('path')
+const path = require('path');
 
-var babelLoader = {
+const babelLoader = {
   test: /\.js$/,
   exclude: 'node_modules',
   loader: 'babel-loader'
-}
+};
 
-var externalLibs = {
+const externalLibs = {
   react: {
     root: 'React',
     commonjs2: 'react',
@@ -39,4 +39,4 @@ module.exports = {
     loaders: [babelLoader]
   },
   externals: externalLibs
-}
+};

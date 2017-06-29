@@ -10,12 +10,13 @@ import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import { reducer as questReducer } from '../src';
 
-export const createStore = () => _createStore(
-  combineReducers({
-    _data_: questReducer
-  }),
-  applyMiddleware(thunk)
-);
+export const createStore = () =>
+  _createStore(
+    combineReducers({
+      _data_: questReducer
+    }),
+    applyMiddleware(thunk)
+  );
 
 export const withStore = store => App => () => (
   <Provider store={store || createStore()}>
@@ -23,14 +24,16 @@ export const withStore = store => App => () => (
   </Provider>
 );
 
-export const mount = node => new Promise(resolve => {
-  const mounted = _mount(node);
-  setTimeout(() => resolve(mounted), 0);
-});
+export const mount = node =>
+  new Promise(resolve => {
+    const mounted = _mount(node);
+    setTimeout(() => resolve(mounted), 0);
+  });
 
-export const delay = (interval = 0) => new Promise(resolve => {
-  setTimeout(() => resolve(), interval);
-});
+export const delay = (interval = 0) =>
+  new Promise(resolve => {
+    setTimeout(() => resolve(), interval);
+  });
 
 export const mountHoc = async (hoc, props, store) => {
   const Hoc = hoc(() => null);

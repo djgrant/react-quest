@@ -21,7 +21,8 @@ describe('quest: resolving data', function() {
     update: (num, current) => [
       Promise.resolve([...current, num]),
       new Promise(resolve =>
-        setTimeout(() => resolve([...current, num, num + 1]), 100))
+        setTimeout(() => resolve([...current, num, num + 1]), 100)
+      )
     ]
   };
 
@@ -40,35 +41,32 @@ describe('quest: resolving data', function() {
     expect(resolveGet.mock.calls[0]).toEqual(['test query']);
   });
 
-  it(
-    'maps the default query before passing it to the get method',
-    async function() {
-      const hoc = compose(
-        withProps({
-          testHeader: 'test header'
-        }),
-        quest({
-          resolver: testResolver,
-          query: 'test query',
-          mapQuery: (query, props) => ({
-            headers: {
-              testHeader: props.testHeader
-            },
-            data: query
-          })
+  it('maps the default query before passing it to the get method', async function() {
+    const hoc = compose(
+      withProps({
+        testHeader: 'test header'
+      }),
+      quest({
+        resolver: testResolver,
+        query: 'test query',
+        mapQuery: (query, props) => ({
+          headers: {
+            testHeader: props.testHeader
+          },
+          data: query
         })
-      );
+      })
+    );
 
-      await mountHoc(hoc);
-      const expected = {
-        headers: {
-          testHeader: 'test header'
-        },
-        data: 'test query'
-      };
-      expect(resolveGet.mock.calls[0][0]).toEqual(expected);
-    }
-  );
+    await mountHoc(hoc);
+    const expected = {
+      headers: {
+        testHeader: 'test header'
+      },
+      data: 'test query'
+    };
+    expect(resolveGet.mock.calls[0][0]).toEqual(expected);
+  });
 
   it('maps queries before passing them to mutation methods', async function() {
     const Button = compose(

@@ -2,13 +2,13 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import { omit, omitProps } from '../src/utils';
 
-describe('omit', function () {
+describe('omit', function() {
   it('should omit object properties', function() {
     expect(omit(['a'])({ a: 1, b: 2 })).toEqual({ b: 2 });
   });
 });
 
-describe('omitProps', function () {
+describe('omitProps', function() {
   it('should omit component props', function() {
     var testProps = {
       'data-a': 1,

@@ -10,18 +10,19 @@ export function startQuest(key, resolverMethod) {
     var originalData = getState()._data_[key].data;
     var promises = [].concat(resolverMethod()).map(r => Promise.resolve(r));
 
-    promises.forEach(p => p
-      .then(data => {
-        dispatch(resolveQuest(key, data));
-        return data;
-      })
-      .catch(() => {
-        dispatch(revertQuest(key, originalData));
-        return originalData;
-      }));
+    promises.forEach(p =>
+      p
+        .then(data => {
+          dispatch(resolveQuest(key, data));
+          return data;
+        })
+        .catch(() => {
+          dispatch(revertQuest(key, originalData));
+          return originalData;
+        })
+    );
 
-    return Promise.all(promises)
-      .then(results => results[results.length - 1])
+    return Promise.all(promises).then(results => results[results.length - 1]);
   };
 }
 
