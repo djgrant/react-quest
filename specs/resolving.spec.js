@@ -3,7 +3,14 @@ import { compose } from 'redux';
 import withProps from 'recompose/withProps';
 import withHandlers from 'recompose/withHandlers';
 import quest from '../src';
-import { mount, getHocProps, mountHoc, withStore, delay } from './specUtils';
+import {
+  mount,
+  getHocProps,
+  mountHoc,
+  withStore,
+  delay,
+  createTestStore
+} from './specUtils';
 const { objectContaining, anything } = expect;
 
 describe('quest: resolving data', function() {
@@ -38,7 +45,19 @@ describe('quest: resolving data', function() {
     });
 
     await mountHoc(hoc);
-    expect(resolveGet.mock.calls[0]).toEqual(['test query']);
+    const args = resolveGet.mock.calls[0];
+    expect(args[0]).toEqual('test query');
+  });
+
+  it('passes existing data to the resolver', async function() {
+    const hoc = quest({
+      resolver: testResolver,
+      query: 'test query'
+    });
+    const store = createTestStore({ _data_: { test: { data: 'test' } } });
+    await mountHoc(hoc, {}, store);
+    const args = resolveGet.mock.calls[0];
+    expect(args).toEqual(['test query', 'test']);
   });
 
   it('maps the default query before passing it to the get method', async function() {
@@ -65,7 +84,8 @@ describe('quest: resolving data', function() {
       },
       data: 'test query'
     };
-    expect(resolveGet.mock.calls[0][0]).toEqual(expected);
+    const args = resolveGet.mock.calls[0];
+    expect(args[0]).toEqual(expected);
   });
 
   it('maps queries before passing them to mutation methods', async function() {
@@ -100,7 +120,8 @@ describe('quest: resolving data', function() {
       },
       data: 'test query'
     };
-    expect(resolveUpdate.mock.calls[0][0]).toEqual(expected);
+    const args = resolveUpdate.mock.calls[0];
+    expect(args[0]).toEqual(expected);
   });
 
   it('should resolve promises to quests', async function() {

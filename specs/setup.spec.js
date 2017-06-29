@@ -3,10 +3,10 @@ import { compose } from 'redux';
 import { mount } from 'enzyme';
 import quest from '../src';
 import { reducer as questReducer } from '../src';
-import { createStore, withStore, Items } from './specUtils';
+import { createTestStore, withStore, Items } from './specUtils';
 
 describe('quest: setup', function() {
-  const store = createStore();
+  const store = createTestStore();
 
   it('requires a resolver', function() {
     expect(() => {

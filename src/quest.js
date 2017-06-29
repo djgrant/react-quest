@@ -49,28 +49,32 @@ var quest = (
   var key = resolver.key;
 
   return compose(
-    // map data already in store to a data prop
     setDisplayName('Quest'),
     connect(
+      // map data already in store to a data prop
       state => ({
         [key]: state._data_[key] || defaultState
       }),
       (dispatch, props) => ({
-        updateData: (next, nextProps) => {
+        updateData: (updater, nextProps) => {
           let defaultQuery = typeof query === 'function'
             ? query(nextProps || props)
             : query;
 
           defaultQuery = mapQuery(defaultQuery, nextProps || props);
+          const currentData = props[key] ? props[key].data : null;
 
-          if (next === undefined) {
-            return dispatch(
-              startQuest(key, resolver.get.bind(null, defaultQuery))
-            );
-          } else if (typeof next === 'function') {
-            return dispatch(startQuest(key, next));
+          if (updater === undefined) {
+            // Lifecycle update
+            updater = resolver.get.bind(null, defaultQuery, currentData);
+            return dispatch(startQuest(key, updater));
+          } else if (typeof updater === 'function') {
+            // Programatic update
+            return dispatch(startQuest(key, updater));
+          } else if (typeof updater === 'object') {
+            // Explicit update (with plain data)
+            return dispatch(resolveQuest(key, updater));
           }
-          return dispatch(resolveQuest(key, next));
         }
       })
     ),
