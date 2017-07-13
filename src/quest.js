@@ -54,30 +54,29 @@ var quest = (
       // map data already in store to a data prop
       state => ({
         [key]: state._data_[key] || defaultState
-      }),
-      (dispatch, props) => ({
-        updateData: (updater, nextProps) => {
-          let defaultQuery = typeof query === 'function'
-            ? query(nextProps || props)
-            : query;
-
-          defaultQuery = mapQuery(defaultQuery, nextProps || props);
-          const currentData = props[key] ? props[key].data : null;
-
-          if (updater === undefined) {
-            // Lifecycle update
-            updater = resolver.get.bind(null, defaultQuery, currentData);
-            return dispatch(startQuest(key, updater));
-          } else if (typeof updater === 'function') {
-            // Programatic update
-            return dispatch(startQuest(key, updater));
-          } else if (typeof updater === 'object') {
-            // Explicit update (with plain data)
-            return dispatch(resolveQuest(key, updater));
-          }
-        }
       })
     ),
+    connect(null, (dispatch, props) => ({
+      updateData: (updater, nextProps) => {
+        let defaultQuery =
+          typeof query === 'function' ? query(nextProps || props) : query;
+
+        defaultQuery = mapQuery(defaultQuery, nextProps || props);
+        const currentData = props[key] ? props[key].data : null;
+
+        if (updater === undefined) {
+          // Lifecycle update
+          updater = resolver.get.bind(null, defaultQuery, currentData);
+          return dispatch(startQuest(key, updater));
+        } else if (typeof updater === 'function') {
+          // Programatic update
+          return dispatch(startQuest(key, updater));
+        } else if (typeof updater === 'object') {
+          // Explicit update (with plain data)
+          return dispatch(resolveQuest(key, updater));
+        }
+      }
+    })),
     Base =>
       class extends React.Component {
         componentWillMount() {
@@ -208,9 +207,8 @@ var quest = (
         ...props,
         [key]: {
           ...props[key],
-          data: typeof defaultData === 'function'
-            ? defaultData(props)
-            : defaultData
+          data:
+            typeof defaultData === 'function' ? defaultData(props) : defaultData
         }
       }))
     ),
