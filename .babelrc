@@ -4,17 +4,16 @@
       "presets": [
         "react",
         "stage-3",
-        ["latest", {
-          "es2015": { "modules": false }
-        }]
-      ],
+        [
+          "latest",
+          {
+            "es2015": { "modules": false }
+          }
+        ]
+      ]
     },
     "test": {
-      "presets": [
-        "react",
-        "stage-3",
-        "latest"
-      ]
+      "presets": ["react", "stage-3", "latest"]
     }
   }
 }
