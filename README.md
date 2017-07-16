@@ -6,6 +6,10 @@ Declarative data fetching for universal React/Redux apps.
 [![MIT License](https://img.shields.io/npm/l/react-quest.svg?style=flat-square)](http://opensource.org/licenses/MIT)
 [![Travis](https://img.shields.io/travis/djgrant/react-quest.svg?style=flat-square)](https://travis-ci.org/djgrant/react-quest)
 
+| Overview | [API Reference](API) | [Examples](examples) |
+|----------|----------------------|----------------------|
+
+
 ```js
 import quest from 'react-quest';
 
@@ -51,12 +55,11 @@ A lightweight (2kb gzip) yet impressively featured library for colocating compon
 - [Adding mutation methods to resolvers](#adding-mutation-methods-to-resolvers)
 - [Updating remote data](#updating-remote-data)
 - [Performing optimistic updates](#performing-optimistic-updates)
-- [Complete API reference](#complete-api-reference)
 
 
 ### Prerequisites
 
-react-quest leverages Redux to manage state and caching. Before proceeding with setup make sure you have the following packages installed:
+react-quest leverages Redux to manage state and caching. Before proceeding with theup make sure you have the following packages installed:
 
 - [react](https://facebook.github.io/react/)
 - [redux](http://redux.js.org/#installation)
@@ -80,7 +83,7 @@ const reducer = combineReducers({
 
 ### Server side resolution
 
-To server render an app that is complete with data, quests must first be resolved before their components are rendered. This means we need to reach beyond synchronous rendering solutions, like `ReactDOMServer.renderToString()`, and to a renderer that can render the tree progressively. Custom renderers are super hot right now and excellent renderers like rapscallion are [shaping up to solve this problem](https://github.com/FormidableLabs/rapscallion/issues/51#issuecomment-287202896). 
+To server render an app that is complete with data, quests must first be resolved before their components are rendered. This means we need to reach beyond synchronous rendering solutions, like `ReactDOMServer.renderToString()`, and to a renderer that can render the tree progressively. Custom renderers are super hot right now and excellent renderers like rapscallion are [shaping up to solve this problem](https://github.com/FormidableLabs/rapscallion/issues/51#issuecomment-287202896).
 
 While the React community figures out progessive rendering you can try [redux-ready](https://github.com/djgrant/redux-ready), a simple solution that works well with simple trees that don't have nested quests, or [react-warmup](https://github.com/djgrant/react-warmup) which performs a cache warmup.
 
@@ -186,7 +189,7 @@ Posts.propTypes = {
 };
 ```
 
-It's unlikely that you'll need direct access to the `get()` method, however, it is useful be able to call mutation methods programmatically. The `create()` method, for example, could be called on a user event (see [Passing a query to the resolver](#passing-a-query-to-the-resolver)).
+Being able to call methods programmatically enables you to update your local dataset or mutate remote data. For example, the `create()` method could be called on a user event (see [Passing a query to the resolver](#passing-a-query-to-the-resolver)), and the `get()` method could be used to implement pagination or lazy loading.
 
 ### Deferring fetching to the browser
 By default quests will attempt to resolve their data requirements whenever they are instantiated, including on server render passes. To defer loading until the component is mounted set `fetchOnServer: false` in the options block:
@@ -296,13 +299,14 @@ export default withNewPosts(Items);
 
 ### Passing a query to the resolver
 
-Resolver methods can be configured by creating a `query` object in a quest. The `query` option takes either a prop mapping function or a plain object:
+Queries are a powerful construct that enable you to change the way data is resolved. Queries are passed as a parameter to resolver methods. A `query` can be either a prop mapping function or a plain object:
 
 ```js
 const postsResolver = {
   key: 'posts',
   get(query) {
-    return fetch(`${POST_API_URL}?filter=${query.filter}`).then(r => r.json())
+    const filter = query.filter;
+    return fetch(`${POST_API_URL}?filter=${filter}`).then(r => r.json())
   }
 };
 
@@ -340,7 +344,6 @@ class extends Component {
   }
 }
 ```
-
 
 ### Adding mutation methods to resolvers
 Now that we know how to pass queries into resolvers and how to access resolver methods programmatically, we can add some mutative methods to our `postsResolver`. Let's add a method that creates new entries.
@@ -511,9 +514,6 @@ const postsResolver = {
   }
 };
 ```
-
-### Complete API reference
-Todo
 
 ## Credits
 
