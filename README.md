@@ -217,7 +217,7 @@ To refetch a resource when a new condition is satisfied while a component is rec
 ```js
 quest({
   resolver: postsResolver,
-  refetchWhen: (props, nextProps) => props.a !== props.b
+  refetchWhen: (props, nextProps) => props.a !== nextProps.a
 })
 ```
 
