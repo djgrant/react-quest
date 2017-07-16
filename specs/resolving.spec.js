@@ -24,11 +24,11 @@ describe('quest: resolving data', function() {
   const itemsResolver = {
     key: 'items',
     get: () => Promise.resolve([1, 2, 3]),
-    create: (num, current) => Promise.resolve([...current, num]),
-    update: (num, current) => [
-      Promise.resolve([...current, num]),
+    create: (num, getCurrent) => Promise.resolve([...getCurrent(), num]),
+    update: (num, getCurrent) => [
+      Promise.resolve([...getCurrent(), num]),
       new Promise(resolve =>
-        setTimeout(() => resolve([...current, num, num + 1]), 100)
+        setTimeout(() => resolve([...getCurrent(), num, num + 1]), 100)
       )
     ]
   };
@@ -49,15 +49,38 @@ describe('quest: resolving data', function() {
     expect(args[0]).toEqual('test query');
   });
 
-  it('passes existing data to the resolver', async function() {
-    const hoc = quest({
-      resolver: testResolver,
-      query: 'test query'
-    });
-    const store = createTestStore({ _data_: { test: { data: 'test' } } });
+  it('passes resolvers a function to get current data', async function() {
+    let queue = Promise.resolve();
+    const resolver = {
+      key: 'asyncTest',
+      get(query, getCurrentData) {
+        queue = queue.then(
+          () =>
+            new Promise(resolve =>
+              setTimeout(() => resolve({ ...getCurrentData(), ...query.data }))
+            )
+        );
+        return queue;
+      }
+    };
+
+    const hoc = compose(
+      quest({
+        resolver: resolver,
+        query: { data: { a: 1 } }
+      }),
+      quest({
+        resolver: resolver,
+        query: { data: { b: 2 } }
+      })
+    );
+
+    const store = createTestStore({ _data_: { asyncTest: { data: [] } } });
     await mountHoc(hoc, {}, store);
-    const args = resolveGet.mock.calls[0];
-    expect(args).toEqual(['test query', 'test']);
+    await delay(10);
+
+    const data = store.getState()._data_.asyncTest.data;
+    expect(data).toEqual({ a: 1, b: 2 });
   });
 
   it('maps the default query before passing it to the get method', async function() {
@@ -176,7 +199,5 @@ describe('quest: resolving data', function() {
     mounted.find('button').simulate('click');
     await delay(0);
     expect(hocProps.items.data).toEqual([1, 2, 3, 4]);
-    await delay(100);
-    expect(hocProps.items.data).toEqual([1, 2, 3, 4, 5]);
   });
 });

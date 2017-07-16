@@ -8,8 +8,6 @@ import withProps from 'recompose/withProps';
 import renderNothing from 'recompose/renderNothing';
 import toClass from 'recompose/toClass';
 import setDisplayName from 'recompose/setDisplayName';
-import getDisplayName from 'recompose/getDisplayName';
-import wrapDisplayName from 'recompose/wrapDisplayName';
 import { omitProps } from './utils';
 import { startQuest, resolveQuest } from './actions';
 import { defaultState } from './reducer';
@@ -54,29 +52,28 @@ var quest = (
       // map data already in store to a data prop
       state => ({
         [key]: state._data_[key] || defaultState
+      }),
+      (dispatch, props) => ({
+        updateData: (updater, nextProps) => {
+          let defaultQuery =
+            typeof query === 'function' ? query(nextProps || props) : query;
+
+          defaultQuery = mapQuery(defaultQuery, nextProps || props);
+
+          if (updater === undefined) {
+            // Lifecycle update
+            updater = resolver.get.bind(null, defaultQuery);
+            return dispatch(startQuest(key, updater));
+          } else if (typeof updater === 'function') {
+            // Programatic update
+            return dispatch(startQuest(key, updater));
+          } else if (typeof updater === 'object') {
+            // Explicit update (with plain data)
+            return dispatch(resolveQuest(key, updater));
+          }
+        }
       })
     ),
-    connect(null, (dispatch, props) => ({
-      updateData: (updater, nextProps) => {
-        let defaultQuery =
-          typeof query === 'function' ? query(nextProps || props) : query;
-
-        defaultQuery = mapQuery(defaultQuery, nextProps || props);
-        const currentData = props[key] ? props[key].data : null;
-
-        if (updater === undefined) {
-          // Lifecycle update
-          updater = resolver.get.bind(null, defaultQuery, currentData);
-          return dispatch(startQuest(key, updater));
-        } else if (typeof updater === 'function') {
-          // Programatic update
-          return dispatch(startQuest(key, updater));
-        } else if (typeof updater === 'object') {
-          // Explicit update (with plain data)
-          return dispatch(resolveQuest(key, updater));
-        }
-      }
-    })),
     Base =>
       class extends React.Component {
         componentWillMount() {
@@ -159,11 +156,8 @@ var quest = (
               ...props[key],
               [methodName]: methodQuery => {
                 methodQuery = mapQuery(methodQuery, props);
-                const currentData = props[key].data;
                 const method = resolver[methodName];
-                return props.updateData(
-                  method.bind(null, methodQuery, currentData || undefined)
-                );
+                return props.updateData(method.bind(null, methodQuery));
               }
             }
           }),

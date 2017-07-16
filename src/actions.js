@@ -7,8 +7,10 @@ export function startQuest(key, resolverMethod) {
   return (dispatch, getState) => {
     dispatch({ type: types.fetching, key });
 
-    var originalData = getState()._data_[key].data;
-    var promises = [].concat(resolverMethod()).map(r => Promise.resolve(r));
+    const getCurrentData = () => getState()._data_[key].data;
+    const promises = []
+      .concat(resolverMethod(getCurrentData))
+      .map(r => Promise.resolve(r));
 
     promises.forEach(p =>
       p
@@ -17,8 +19,9 @@ export function startQuest(key, resolverMethod) {
           return data;
         })
         .catch(() => {
-          dispatch(revertQuest(key, originalData));
-          return originalData;
+          var currentData = getCurrentData();
+          dispatch(revertQuest(key, currentData));
+          return currentData;
         })
     );
 
