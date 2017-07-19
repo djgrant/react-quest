@@ -2,7 +2,7 @@
   "name": "react-quest",
   "description": "Declarative data fetching for universal Redux apps",
   "author": "Daniel Grant",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -17,7 +17,9 @@
   },
   "main": "lib/index.umd.js",
   "module": "lib/index.js",
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "dependencies": {
     "invariant": "^2.2.2",
     "recompose": "^0.22.0"
@@ -47,5 +49,12 @@
     "redux": "^2.0.0 || ^3.0.0",
     "redux-thunk": "^1.0.0 || ^2.0.0"
   },
-  "keywords": ["redux", "async", "declarative", "data", "fetching", "ssr"]
+  "keywords": [
+    "redux",
+    "async",
+    "declarative",
+    "data",
+    "fetching",
+    "ssr"
+  ]
 }
