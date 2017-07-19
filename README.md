@@ -431,7 +431,7 @@ const postsResolver = {
 
 There are times when in order to form a complete update you'll need access to the data in the local store (say, for example, if your server responds with just the created resource and you need to add it to the existing collection).
 
-When getting existing data it is important to ensure that your update is dispatch immediately after to avoid the data you retrieved going stale.  This means you must pull the latest data out of the store and in the same tick of the event loop dispatch your update. To do this wrap your update (promise) in a thunk, which takes a `dispatch` and `getCurrentData` function. This approach allows react-quest to turn control of dispatching updates over to the resolver (and you, the developer), to guarantee that you only ever update the store with the latest data.
+When getting existing data it is important to ensure that your update is dispatched immediately after to avoid the data you retrieved going stale.  This means you must pull the latest data out of the store and in the same tick of the event loop dispatch your update. To do this wrap your update (promise) in a thunk, which takes a `dispatch` and `getCurrentData` function. This approach allows react-quest to turn control of dispatching updates over to the resolver (and you, the developer), to guarantee that you only ever update the store with the latest data.
 
 For more details on why this is necessary see https://github.com/djgrant/react-quest/pull/4.
 
