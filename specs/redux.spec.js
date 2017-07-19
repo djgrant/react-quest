@@ -19,27 +19,6 @@ describe('actions', function() {
     };
     expect(actual).toEqual(expected);
   });
-
-  it('should create an action to reject a quest', function() {
-    const actual = rejectQuest('items', 'Error message');
-    const expected = {
-      type: types.fetched,
-      key: 'items',
-      error: 'Error message'
-    };
-    expect(actual).toEqual(expected);
-  });
-
-  it('should create an action to revert a quest', function() {
-    const actual = revertQuest('items', [1, 2, 3]);
-    const expected = {
-      type: types.fetched,
-      key: 'items',
-      data: [1, 2, 3],
-      reverted: true
-    };
-    expect(actual).toEqual(expected);
-  });
 });
 
 describe('async actions', function() {

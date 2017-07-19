@@ -24,12 +24,13 @@ describe('quest: resolving data', function() {
   const itemsResolver = {
     key: 'items',
     get: () => Promise.resolve([1, 2, 3]),
-    create: (num, getCurrent) => Promise.resolve([...getCurrent(), num]),
-    update: (num, getCurrent) => [
-      Promise.resolve([...getCurrent(), num]),
+    create: num => (dispatch, getCurrent) =>
+      Promise.resolve().then(() => dispatch.update([...getCurrent(), num])),
+    update: num => (dispatch, getCurrent) => [
+      Promise.resolve().then(() => dispatch.update([...getCurrent(), num])),
       new Promise(resolve =>
-        setTimeout(() => resolve([...getCurrent(), num, num + 1]), 100)
-      )
+        setTimeout(() => resolve(num, num + 1), 100)
+      ).then(newNum => dispatch.update([...getCurrent(), newNum]))
     ]
   };
 
@@ -49,18 +50,19 @@ describe('quest: resolving data', function() {
     expect(args[0]).toEqual('test query');
   });
 
-  it('passes resolvers a function to get current data', async function() {
-    let queue = Promise.resolve();
+  it('resolves thunks', async function() {
     const resolver = {
       key: 'asyncTest',
-      get(query, getCurrentData) {
-        queue = queue.then(
-          () =>
-            new Promise(resolve =>
-              setTimeout(() => resolve({ ...getCurrentData(), ...query.data }))
-            )
-        );
-        return queue;
+      get(query) {
+        return (dispatch, getCurrentData) =>
+          new Promise(resolve =>
+            setTimeout(() => resolve(query.data))
+          ).then(data =>
+            dispatch.update({
+              ...getCurrentData(),
+              ...data
+            })
+          );
       }
     };
 
@@ -75,7 +77,7 @@ describe('quest: resolving data', function() {
       })
     );
 
-    const store = createTestStore({ _data_: { asyncTest: { data: [] } } });
+    const store = createTestStore({ _data_: { asyncTest: { data: {} } } });
     await mountHoc(hoc, {}, store);
     await delay(10);
 
@@ -180,7 +182,7 @@ describe('quest: resolving data', function() {
     expect(hocProps.items.data).toEqual([1, 2, 3, 4]);
   });
 
-  it('should resolve optimistic updates', async function() {
+  it('resolves optimistic updates', async function() {
     let hocProps;
     const Button = compose(
       withStore(),

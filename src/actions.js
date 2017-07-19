@@ -7,36 +7,42 @@ export function startQuest(key, resolverMethod) {
   return (dispatch, getState) => {
     dispatch({ type: types.fetching, key });
 
+    const dispatcher = {
+      update: (...args) => dispatch(resolveQuest(key, ...args))
+    };
+
     const getCurrentData = () => getState()._data_[key].data;
-    const promises = []
-      .concat(resolverMethod(getCurrentData))
-      .map(r => Promise.resolve(r));
 
-    promises.forEach(p =>
-      p
-        .then(data => {
-          dispatch(resolveQuest(key, data));
-          return data;
-        })
-        .catch(() => {
-          var currentData = getCurrentData();
-          dispatch(revertQuest(key, currentData));
-          return currentData;
-        })
-    );
+    const onResolution = data => {
+      dispatch(resolveQuest(key, data));
+      return data;
+    };
 
-    return Promise.all(promises).then(results => results[results.length - 1]);
+    const onRejection = () => {
+      var currentData = getCurrentData();
+      dispatch(resolveQuest(key, currentData, { reverted: true }));
+      return currentData;
+    };
+
+    let updater = resolverMethod();
+    let updates = [];
+
+    if (typeof updater === 'function') {
+      updates = updates.concat(updater(dispatcher, getCurrentData));
+      updates.forEach(update => {
+        Promise.resolve(update).catch(onRejection);
+      });
+    } else {
+      updates = updates.concat(updater);
+      updates.forEach(update => {
+        Promise.resolve(update).then(onResolution).catch(onRejection);
+      });
+    }
+
+    return Promise.all(updates).then(results => results[results.length - 1]);
   };
 }
 
-export function resolveQuest(key, data) {
-  return { type: types.fetched, key, data };
-}
-
-export function rejectQuest(key, error) {
-  return { type: types.fetched, key, error: error.toString() };
-}
-
-export function revertQuest(key, data) {
-  return { type: types.fetched, key, data, reverted: true };
+export function resolveQuest(key, data, options = {}) {
+  return { type: types.fetched, key, data, ...options };
 }
