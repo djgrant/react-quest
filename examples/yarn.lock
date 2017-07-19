@@ -4931,9 +4931,9 @@ react-error-overlay@^1.0.7:
     settle-promise "1.0.0"
     source-map "0.5.6"
 
-react-quest@^0.9.1:
-  version "0.9.1"
-  resolved "https://registry.yarnpkg.com/react-quest/-/react-quest-0.9.1.tgz#3905e42dbfe23bba13086ed9564bdae62c52f64b"
+react-quest@^0.10.0:
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/react-quest/-/react-quest-0.10.0.tgz#6588f2395790ce5b8bf4a3f72dff59e391273f45"
   dependencies:
     invariant "^2.2.2"
     recompose "^0.22.0"

@@ -6,24 +6,28 @@ import range from 'lodash/range';
 
 const postsResolver = {
   key: 'posts',
-  get: (query, currentPosts) => {
+  get: query => {
     if (query.first) {
       return Promise.resolve(
-        range(query.first).map(page => ({
+        range(1, query.first).map(page => ({
           id: page,
           title: `Post ${page}`
         }))
       );
     }
     if (query.next) {
-      const lastPostIndex = currentPosts.length;
-      return Promise.resolve([
-        ...currentPosts,
-        ...range(lastPostIndex, lastPostIndex + query.next).map(page => ({
-          id: page,
-          title: `Post ${page}`
-        }))
-      ]);
+      return (dispatch, getCurrentPosts) => {
+        const currentPosts = getCurrentPosts();
+        const startIndex = currentPosts.length + 1;
+        return Promise.resolve(
+          range(startIndex, startIndex + query.next).map(page => ({
+            id: page,
+            title: `Post ${page}`
+          }))
+        ).then(newPosts => {
+          return dispatch.update([...currentPosts, ...newPosts]);
+        });
+      };
     }
   }
 };
@@ -43,13 +47,16 @@ const enhance = compose(
   })
 );
 
-const Posts = ({ posts, loadMore }) => (
+const Posts = ({ posts, loadMore }) =>
   <div>
     {posts.data
-      ? posts.data.map(post => <h3 key={post.id}>{post.title}</h3>)
+      ? posts.data.map(post =>
+          <h3 key={post.id}>
+            {post.title}
+          </h3>
+        )
       : <p>Loading posts...</p>}
     <button onClick={loadMore}>Load more posts</button>
-  </div>
-);
+  </div>;
 
 export default enhance(Posts);

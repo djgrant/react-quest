@@ -14,7 +14,7 @@ const relatedResolver = {
 
 const articlesResolver = {
   key: 'articles',
-  get: (query, currentPosts) =>
+  get: query =>
     Promise.resolve(
       query.ids.map(id => ({
         id,
@@ -37,11 +37,14 @@ const enhance = compose(
   })
 );
 
-const Combined = ({ related, articles }) => (
+const Combined = ({ related, articles }) =>
   <div>
     {articles.data &&
-      articles.data.map(post => <h3 key={post.id}>{post.title}</h3>)}
-  </div>
-);
+      articles.data.map(post =>
+        <h3 key={post.id}>
+          {post.title}
+        </h3>
+      )}
+  </div>;
 
 export default enhance(Combined);
