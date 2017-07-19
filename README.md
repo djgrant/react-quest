@@ -6,7 +6,7 @@ Declarative data fetching for universal React/Redux apps.
 [![MIT License](https://img.shields.io/npm/l/react-quest.svg?style=flat-square)](http://opensource.org/licenses/MIT)
 [![Travis](https://img.shields.io/travis/djgrant/react-quest.svg?style=flat-square)](https://travis-ci.org/djgrant/react-quest)
 
-| Overview | [API Reference](API) | [Examples](examples) |
+| Overview | [API Reference](API.md) | [Examples](examples) |
 |----------|----------------------|----------------------|
 
 
