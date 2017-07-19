@@ -7,33 +7,43 @@ export function startQuest(key, resolverMethod) {
   return (dispatch, getState) => {
     dispatch({ type: types.fetching, key });
 
-    var originalData = getState()._data_[key].data;
-    var promises = [].concat(resolverMethod()).map(r => Promise.resolve(r));
+    const dispatcher = {
+      update: (data, ...args) => {
+        dispatch(resolveQuest(key, data, ...args));
+        return data;
+      }
+    };
 
-    promises.forEach(p =>
-      p
-        .then(data => {
-          dispatch(resolveQuest(key, data));
-          return data;
-        })
-        .catch(() => {
-          dispatch(revertQuest(key, originalData));
-          return originalData;
-        })
-    );
+    const getCurrentData = () => getState()._data_[key].data;
 
-    return Promise.all(promises).then(results => results[results.length - 1]);
+    const onResolution = data => {
+      dispatch(resolveQuest(key, data));
+      return data;
+    };
+
+    const onRejection = () => {
+      var currentData = getCurrentData();
+      dispatch(resolveQuest(key, currentData, { reverted: true }));
+      return currentData;
+    };
+
+    let updater = resolverMethod();
+    let updates = [];
+
+    if (typeof updater === 'function') {
+      updates = updates.concat(updater(dispatcher, getCurrentData));
+      updates.map(update => Promise.resolve(update).catch(onRejection));
+    } else {
+      updates = updates.concat(updater);
+      updates.map(update =>
+        Promise.resolve(update).then(onResolution).catch(onRejection)
+      );
+    }
+
+    return Promise.all(updates).then(results => results[results.length - 1]);
   };
 }
 
-export function resolveQuest(key, data) {
-  return { type: types.fetched, key, data };
-}
-
-export function rejectQuest(key, error) {
-  return { type: types.fetched, key, error: error.toString() };
-}
-
-export function revertQuest(key, data) {
-  return { type: types.fetched, key, data, reverted: true };
+export function resolveQuest(key, data, options = {}) {
+  return { type: types.fetched, key, data, ...options };
 }

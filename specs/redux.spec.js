@@ -19,27 +19,6 @@ describe('actions', function() {
     };
     expect(actual).toEqual(expected);
   });
-
-  it('should create an action to reject a quest', function() {
-    const actual = rejectQuest('items', 'Error message');
-    const expected = {
-      type: types.fetched,
-      key: 'items',
-      error: 'Error message'
-    };
-    expect(actual).toEqual(expected);
-  });
-
-  it('should create an action to revert a quest', function() {
-    const actual = revertQuest('items', [1, 2, 3]);
-    const expected = {
-      type: types.fetched,
-      key: 'items',
-      data: [1, 2, 3],
-      reverted: true
-    };
-    expect(actual).toEqual(expected);
-  });
 });
 
 describe('async actions', function() {
@@ -84,6 +63,28 @@ describe('async actions', function() {
     const result = await thunk(mockDispatch, mockGetState);
 
     expect(mockDispatch).toHaveBeenCalledTimes(3);
+    expect(result).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('should handle thunks that return plain data', async function() {
+    const getter = () => (dispatch, getCurrentData) => [
+      dispatch.update([1, 2, 3, 4]),
+      dispatch.update([1, 2, 3, 4, 5])
+    ];
+    const thunk = startQuest('items', getter);
+    const result = await thunk(mockDispatch, mockGetState);
+
+    expect(result).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('should handle thunks that return promises', async function() {
+    const getter = () => (dispatch, getCurrentData) => [
+      Promise.resolve().then(() => dispatch.update([1, 2, 3, 4])),
+      Promise.resolve().then(() => dispatch.update([1, 2, 3, 4, 5]))
+    ];
+    const thunk = startQuest('items', getter);
+    const result = await thunk(mockDispatch, mockGetState);
+
     expect(result).toEqual([1, 2, 3, 4, 5]);
   });
 

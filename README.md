@@ -351,7 +351,7 @@ Now that we know how to pass queries into resolvers and how to access resolver m
 ```js
 const postsResolver = {
   ...
-  create(post, currentPosts) {
+  create(post) {
     fetch(POST_API_URL, {
       method: 'POST',
       body: JSON.stringify(post)
@@ -385,7 +385,7 @@ To update the local data store, return a promise that resolves with updated coll
 ```js
 const postsResolver = {
   ...
-  create(post, currentPosts) {
+  create(post) {
     return fetch(POST_API_URL, {
       method: 'POST',
       body: JSON.stringify(post)
@@ -431,20 +431,20 @@ const postsResolver = {
 
 There are times when in order to form a complete update you'll need access to the data in the local store (say, for example, if your server responds with just the created resource and you need to add it to the existing collection).
 
-The current local data collection is passed as the second argument to all mutation methods:
+When getting existing data it is important to ensure that your update is dispatched immediately after to avoid the data you retrieved going stale.  This means you must pull the latest data out of the store and in the same tick of the event loop dispatch your update. To do this wrap your update (promise) in a thunk, which takes a `dispatch` and `getCurrentData` function. This approach allows react-quest to turn control of dispatching updates over to the resolver (and you, the developer), to guarantee that you only ever update the store with the latest data.
+
+For more details on why this is necessary see https://github.com/djgrant/react-quest/pull/4.
 
 ```js
 const postsResolver = {
   ...
-  create(post, currentPosts) {
+  create: post => (dispatch, getCurrentPosts) => {
     return fetch(POST_API_URL, {
       method: 'POST',
       body: JSON.stringify(post)
     })
       .then(r => r.json())
-      .then(newPost => {
-        return [...currentPosts, newPost];
-      });
+      .then(newPost => dispatch.update([...getCurrentPosts(), newPost]));
   }
 };
 ```
@@ -460,7 +460,7 @@ Let's start with a simple example for this technique:
 ```js
 const numberResolver = {
   ...
-  create(number, currentNumber) {
+  create(number) {
     // the first promise will resolve with the data we hope to add
     const optimisticUpdate = Promise.resolve(number);
 
@@ -486,8 +486,7 @@ Returning to our posts example, we can update the local store first with the use
 ```js
 const postsResolver = {
   ...
-  create(post, currentPosts) {
-    const newPosts = [...currentPosts, post];
+  create: post => (dispatch, getCurrentPosts) => {
     const optimisticUpdate = Promise.resolve(newPosts);
 
     const serverUpdate = fetch(POST_API_URL, {
@@ -503,7 +502,7 @@ const postsResolver = {
         }
         return response.json();
       })
-      .then(newPost => [...currentPosts, newPost])
+      .then(newPost => dispatch.update([...getCurrentPosts(), newPost]))
       .catch(err => {
         console.log('Create post failed with error ', err)
         // If the promise rejects the fail safe mechanism

@@ -9,8 +9,8 @@
     "url": "https://github.com/djgrant/react-quest"
   },
   "scripts": {
-    "test": "jest",
-    "dev": "jest --watch",
+    "test": "BABEL_ENV=test jest",
+    "dev": "BABEL_ENV=test jest --watch",
     "build": "npm run build:umd && npm run build:es",
     "build:umd": "BABEL_ENV=build webpack --config webpack.config.build.js",
     "build:es": "BABEL_ENV=build babel src --out-dir lib --ignore spec.js,test.js"
@@ -25,15 +25,15 @@
     "recompose": "^0.22.0"
   },
   "devDependencies": {
-    "babel-core": "^6.23.1",
-    "babel-jest": "^18.0.0",
-    "babel-loader": "^6.3.0",
+    "babel-core": "^6.25.0",
+    "babel-jest": "^20.0.3",
+    "babel-loader": "^7.1.1",
     "babel-polyfill": "^6.23.0",
     "babel-preset-latest": "^6.22.0",
-    "babel-preset-react": "^6.23.0",
-    "babel-preset-stage-3": "^6.22.0",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-3": "^6.24.1",
     "enzyme": "^2.7.1",
-    "jest": "^18.1.0",
+    "jest": "^20.0.4",
     "react": "^15.4.2",
     "react-addons-test-utils": "^15.4.2",
     "react-dom": "^15.4.2",

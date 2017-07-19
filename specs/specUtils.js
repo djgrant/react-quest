@@ -1,25 +1,21 @@
 import React from 'react';
-import {
-  compose,
-  createStore as _createStore,
-  combineReducers,
-  applyMiddleware
-} from 'redux';
+import { compose, createStore, combineReducers, applyMiddleware } from 'redux';
 import { mount as _mount } from 'enzyme';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import { reducer as questReducer } from '../src';
 
-export const createStore = () =>
-  _createStore(
+export const createTestStore = preloadedState =>
+  createStore(
     combineReducers({
       _data_: questReducer
     }),
+    preloadedState,
     applyMiddleware(thunk)
   );
 
 export const withStore = store => App => () => (
-  <Provider store={store || createStore()}>
+  <Provider store={store || createTestStore()}>
     <App />
   </Provider>
 );
@@ -38,7 +34,7 @@ export const delay = (interval = 0) =>
 export const mountHoc = async (hoc, props, store) => {
   const Hoc = hoc(() => null);
   await mount(
-    <Provider store={store || createStore()}>
+    <Provider store={store || createTestStore()}>
       <Hoc {...props} />
     </Provider>
   );
@@ -51,7 +47,7 @@ export const getHocProps = async (hoc, props, store) => {
     return null;
   });
   await mount(
-    <Provider store={store || createStore()}>
+    <Provider store={store || createTestStore()}>
       <HocWithPropsCatcher {...props} />
     </Provider>
   );
