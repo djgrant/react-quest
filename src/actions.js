@@ -8,7 +8,10 @@ export function startQuest(key, resolverMethod) {
     dispatch({ type: types.fetching, key });
 
     const dispatcher = {
-      update: (...args) => dispatch(resolveQuest(key, ...args))
+      update: (data, ...args) => {
+        dispatch(resolveQuest(key, data, ...args));
+        return data;
+      }
     };
 
     const getCurrentData = () => getState()._data_[key].data;
@@ -29,14 +32,12 @@ export function startQuest(key, resolverMethod) {
 
     if (typeof updater === 'function') {
       updates = updates.concat(updater(dispatcher, getCurrentData));
-      updates.forEach(update => {
-        Promise.resolve(update).catch(onRejection);
-      });
+      updates.map(update => Promise.resolve(update).catch(onRejection));
     } else {
       updates = updates.concat(updater);
-      updates.forEach(update => {
-        Promise.resolve(update).then(onResolution).catch(onRejection);
-      });
+      updates.map(update =>
+        Promise.resolve(update).then(onResolution).catch(onRejection)
+      );
     }
 
     return Promise.all(updates).then(results => results[results.length - 1]);

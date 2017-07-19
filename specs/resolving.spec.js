@@ -27,7 +27,7 @@ describe('quest: resolving data', function() {
     create: num => (dispatch, getCurrent) =>
       Promise.resolve().then(() => dispatch.update([...getCurrent(), num])),
     update: num => (dispatch, getCurrent) => [
-      Promise.resolve().then(() => dispatch.update([...getCurrent(), num])),
+      dispatch.update([...getCurrent(), num]),
       new Promise(resolve =>
         setTimeout(() => resolve(num, num + 1), 100)
       ).then(newNum => dispatch.update([...getCurrent(), newNum]))

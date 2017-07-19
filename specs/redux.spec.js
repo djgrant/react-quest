@@ -66,6 +66,28 @@ describe('async actions', function() {
     expect(result).toEqual([1, 2, 3, 4, 5]);
   });
 
+  it('should handle thunks that return plain data', async function() {
+    const getter = () => (dispatch, getCurrentData) => [
+      dispatch.update([1, 2, 3, 4]),
+      dispatch.update([1, 2, 3, 4, 5])
+    ];
+    const thunk = startQuest('items', getter);
+    const result = await thunk(mockDispatch, mockGetState);
+
+    expect(result).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('should handle thunks that return promises', async function() {
+    const getter = () => (dispatch, getCurrentData) => [
+      Promise.resolve().then(() => dispatch.update([1, 2, 3, 4])),
+      Promise.resolve().then(() => dispatch.update([1, 2, 3, 4, 5]))
+    ];
+    const thunk = startQuest('items', getter);
+    const result = await thunk(mockDispatch, mockGetState);
+
+    expect(result).toEqual([1, 2, 3, 4, 5]);
+  });
+
   it('should revert the data if a promise rejects', async function() {
     const getter = () => [Promise.resolve([1, 2, 3, 4]), Promise.reject()];
     const thunk = startQuest('items', getter);
