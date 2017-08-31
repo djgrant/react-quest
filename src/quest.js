@@ -182,15 +182,6 @@ var quest = (
         ...mapToProps(props[key].data, props)
       }))
     ),
-    // in certain cases e.g. the resulting data is always resolved
-    // the data can be mapped directly to the key prop
-    when(
-      props => mapDirect && hasData(props[key]),
-      mapProps(props => ({
-        ...props,
-        [key]: props[key].data
-      }))
-    ),
     when(
       props => waitForData && (!hasData(props[key]) || hasError(props[key])),
       branch ? branch : renderNothing
@@ -204,6 +195,15 @@ var quest = (
           data:
             typeof defaultData === 'function' ? defaultData(props) : defaultData
         }
+      }))
+    ),
+    // in certain cases e.g. the resulting data is always resolved
+    // the data can be mapped directly to the key prop
+    when(
+      props => mapDirect && hasData(props[key]),
+      mapProps(props => ({
+        ...props,
+        [key]: props[key].data
       }))
     ),
     // wrap in class so BaseComponent appears as own component in devtools
